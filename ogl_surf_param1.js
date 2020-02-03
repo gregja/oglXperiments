@@ -1,4 +1,4 @@
-import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from './js/ogl/index.mjs';
+import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from './js/ogl/ogl.js';
 
 // When we use standard derivatives (dFdx & dFdy functions),
 // which are necessary for this effect, WebGL1 requires the
@@ -90,25 +90,39 @@ const fragment300 = /* glsl */ `#version 300 es
     // let render_modes = ['LINES',  'LINE_STRIP', 'LINE_LOOP', 'TRIANGLES', 'TRIANGLE_STRIP', 'TRIANGLE_FAN', 'PAN', 'DOLLY_PAN', 'QUADS', 'QUAD_STRIP'];
     let render_modes = ['LINES',  'LINE_STRIP', 'TRIANGLES', 'TRIANGLE_STRIP', 'TRIANGLE_FAN'];
 
+    // textures from : https://unsplash.com/collections/1417675/google-pixel-textures-collection
+    let textures = [
+        '0=None',
+        '1=bia-andrade-PO8Woh4YBD8-unsplash.jpg',
+        '2=ferdinand-stohr-NFs6dRTBgaM-unsplash.jpg',
+        '3=evan-provan-V9A-_QKLElg-unsplash.jpg',
+        '4=neven-krcmarek-0qLzJkSXNdQ-unsplash.jpg',
+        '5=steve-johnson-5Oe8KFH5998-unsplash.jpg'
+    ];
+
     let settings = {
-        default_colorU: "#ff0000", // previous ,"#5743e6"
-        default_colorV: "#336699", // previous "#d4541f",
-        default_colorMesh: "#000000",
-        unused1: true,
-        unused2: true,
         rendering: 'TRIANGLE_STRIP',
         gen_mode: generator_modes[0],
-        stroke_value: 1,
-        isSpinning: true,
-        speed: 0.003,
-        scale: current_shape.scale,
-        init_scale: current_shape.scale,
-        name: current_shape.name
+        texture: textures[0],
+        name: current_shape.name,
+        isSpinning: false,
+        //   stroke_value: 1,
+        //   speed: 0.003,
+        //   scale: current_shape.scale,
+        //   init_scale: current_shape.scale,
+        //   default_colorU: "#ff0000", // previous ,"#5743e6"
+        //   default_colorV: "#336699", // previous "#d4541f",
+        //   default_colorMesh: "#000000",
     };
 
     function extract_code(value) {
         let sep = value.split('=');
         return Number(sep[0]);
+    }
+
+    function extract_value(value) {
+        let sep = value.split('=');
+        return sep[1];
     }
 
     let shape3d = parametricalSurfaces.curvesInMesh(extract_code(settings.gen_mode));
@@ -128,11 +142,13 @@ const fragment300 = /* glsl */ `#version 300 es
     document.body.appendChild(gl.canvas);
     gl.clearColor(1, 1, 1, 1);
 
-//        const camera = new Camera(gl, {fov: -25});
-    const camera = new Camera(gl);
-    camera.position.set(2, 1, 2);
+    var campos = {x:0, y:0, z:0};
 
-    const controls = new Orbit(camera, {
+//        const camera = new Camera(gl, {fov: -25});
+    var camera = new Camera(gl);
+    camera.position.set(2, 1, 0);
+
+    var controls = new Orbit(camera, {
         target: new Vec3(0, 0.2, 0),
     });
 
@@ -144,13 +160,13 @@ const fragment300 = /* glsl */ `#version 300 es
     resize();
 
     let scene = new Transform();
-    const texture = new Texture(gl);
+    let texture = new Texture(gl);
 
-    /*
-    const img = new Image();
-    img.onload = () => texture.image = img;
-    img.src = 'assets/matcap.jpg';
-    */
+    if (settings.texture != null) {
+        const img = new Image();
+        img.onload = () => texture.image = img;
+        img.src = 'assets/' + extract_value(settings.texture);
+    }
 
     const program = new Program(gl, {
         vertex: renderer.isWebgl2 ? vertex300 : vertex100,
@@ -168,21 +184,43 @@ const fragment300 = /* glsl */ `#version 300 es
     let mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
     mesh.setParent(scene);
 
+    var capture = false;
+
+    let save_btn = document.getElementById('save_btn');
+    save_btn.addEventListener('click', (evt)=>{
+        capture = true;
+    }, false);
+
+
     function update() {
         requestAnimationFrame(update);
         controls.update();
+        if (settings.isSpinning) {
+            mesh.rotation.y -= 0.01;
+            mesh.rotation.x += 0.01;
+        }
         renderer.render({scene, camera});
+
+        if (capture) {
+            capture = false;
+
+            let snapshot = document.getElementById('snapshot');
+            snapshot.width = gl.canvas.width;
+            snapshot.height = gl.canvas.height;
+            let vctx = snapshot.getContext('2d');
+            vctx.drawImage(gl.canvas, 0, 0, gl.canvas.width, gl.canvas.height);
+            let data = snapshot.toDataURL("image/png", 1);
+            let save_link = document.getElementById('save_link');
+            save_link.setAttribute('href', data);
+            save_link.click();
+        }
     }
 
-    function addGui(obj, surf_list) {
+    function addGui(obj) {
         let gui = new dat.gui.GUI();
 
-        // add 2 temporary options for turn around a bug not understood
-        gui.add(obj, 'unused1');
-        gui.add(obj, 'unused2');
-
         // Choose from accepted values
-        var guiSurfList = gui.add(obj, 'name', surf_list).listen();
+        var guiSurfList = gui.add(obj, 'name', surface_listing).listen();
         guiSurfList.onChange(function(value){
             current_shape = parametricalSurfaces.setSurface(value);
             info.innerHTML = current_shape.name;
@@ -212,8 +250,24 @@ const fragment300 = /* glsl */ `#version 300 es
             mesh.setParent(scene);
         });
 
-        var libRndrMode = gui.add(obj, 'gen_mode', generator_modes, obj.gen_mode).listen();  // none by default
-        libRndrMode.onChange(function(value){
+        var guiTexture = gui.add(obj, 'texture', textures, obj.texture).listen();  // none by default
+        guiTexture.onChange(function(value){
+            if (obj.texture != null) {
+                obj.texture = value;
+                if (extract_code(obj.texture) != 0) {
+                    const img = new Image();
+                    img.onload = () => texture.image = img;
+                    img.src = 'assets/' + extract_value(obj.texture);
+                    program.uniforms.tMap = {value: texture};
+                } else {
+                    texture = new Texture(gl);
+                    program.uniforms.tMap = {value: texture};
+                }
+            }
+        });
+
+        var guiGenMode = gui.add(obj, 'gen_mode', generator_modes, obj.gen_mode).listen();  // none by default
+        guiGenMode.onChange(function(value){
             obj.gen_mode = value;
             let shape3d = parametricalSurfaces.curvesInMesh(extract_code(obj.gen_mode));
             xportMesh = [];
@@ -234,7 +288,11 @@ const fragment300 = /* glsl */ `#version 300 es
             mesh.setParent(scene);
         });
 
-        //gui.add(obj, 'isSpinning');
+        let gui_spinning = gui.add(obj, 'isSpinning').listen();
+        gui_spinning.onChange(function(value){
+            obj.isSpinning = Boolean(value);
+        });
+
         //gui.add(obj, 'stroke_value').min(1).max(5).step(1);
         //gui.add(obj, 'speed').min(0).max(.01).step(.001);
         //gui.add(obj, 'scale').min(1).max(400).step(1);
@@ -249,7 +307,7 @@ const fragment300 = /* glsl */ `#version 300 es
 
     document.addEventListener("DOMContentLoaded", function (event) {
         console.log("DOM fully loaded and parsed");
-        addGui(settings, surface_listing);
+        addGui(settings);
         requestAnimationFrame(update);
     });
 }

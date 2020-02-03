@@ -153,7 +153,7 @@ var parametricalSurfaces = (function () {
             fx: (u, v) => A * (sin(v) * sin(u)),
             fy: (u, v) => A * (B * cos(v)),
             fz: (u, v) => A * (sin(v) * cos(u)),
-            scale: DEFAULT_SCALE * 2
+            scale: DEFAULT_SCALE
         });
 
         surface_types.push({
@@ -465,7 +465,7 @@ var parametricalSurfaces = (function () {
             fx: (u, v) => (2 + A * sin(TAU * u)) * sin(TWO_TAU * v),
             fy: (u, v) => (2 + A * sin(TAU * u)) * cos(TWO_TAU * v),
             fz: (u, v) => A * cos(TAU * u) + 3 * cos(TAU * v),
-            scale: DEFAULT_SCALE
+            scale: DEFAULT_SCALE * 2
         });
 
         surface_types.push({
@@ -950,7 +950,7 @@ var parametricalSurfaces = (function () {
                     }
                     return z;
                 };
-                return {x: u, y: v, z: -fnc(u, v)};
+                return {x: u/10, y: v/10, z: -fnc(u, v)/10};
             },
             scale: DEFAULT_SCALE,
             rotation: {x: TAU / 8}
@@ -977,7 +977,7 @@ var parametricalSurfaces = (function () {
                     }
                     return z;
                 };
-                return {x: u, y: v, z: -fnc(u, v)};
+                return {x: u/10, y: v/10, z: -fnc(u, v)/10};
             },
             scale: DEFAULT_SCALE,
             rotation: {x: TAU / 8}
@@ -1004,7 +1004,7 @@ var parametricalSurfaces = (function () {
                     }
                     return z;
                 };
-                return {x: u, y: v, z: fnc(u, v)};
+                return {x: u/10, y: v/10, z: fnc(u, v)/10};
             },
             scale: DEFAULT_SCALE,
             rotation: {x: TAU / 8}
@@ -1035,7 +1035,7 @@ var parametricalSurfaces = (function () {
                     }
                     return z;
                 };
-                return {x: u, y: v, z: -fnc(u, v)};
+                return {x: u/10, y: v/10, z: -fnc(u, v)/10};
             },
             scale: DEFAULT_SCALE,
             rotation: {x: TAU / 8}
@@ -1058,7 +1058,7 @@ var parametricalSurfaces = (function () {
                     }
                     return z;
                 };
-                return {x: u, y: v, z: -fnc(u, v)};
+                return {x: u/10, y: v/10, z: -fnc(u, v)/10};
             },
             scale: DEFAULT_SCALE,
             rotation: {x: TAU / 8}
@@ -1081,7 +1081,7 @@ var parametricalSurfaces = (function () {
                     }
                     return z;
                 };
-                return {x: u, y: v, z: -fnc(u, v)};
+                return {x: u/10, y: v/10, z: -fnc(u, v)/10};
             },
             scale: DEFAULT_SCALE,
             rotation: {x: TAU / 8}
@@ -1092,14 +1092,14 @@ var parametricalSurfaces = (function () {
             name: 'Lovecraft\'s Castle',
             list: 3,
             comment: 'adapted from the book "Graphismes sur IBM PC", de Gabriel Cuellar, Eyrolle 1987',
-            params: {A: 80, B: 18},
-            u: {begin: -100, end: 100, step: 5},
-            v: {begin: -100, end: 100, step: 5},
+            params: {A: 8, B: 1.8},
+            u: {begin: -10, end: 10, step: .5},
+            v: {begin: -10, end: 10, step: .5},
             fxyz: (u, v) => {
                 let fnc = (x, y) => {
-                    let xt = 20 * (x / 20);
-                    let yt = 10 * (y / 10);
-                    let z = y * .2;
+                    let xt = 2 * (x / 2);
+                    let yt = 1 * (y / 1);
+                    let z = y * .02;
                     let d = sqrt(xt * xt + yt * yt);
                     d = B * floor(d / B);
                     if (d > A) {
@@ -1122,23 +1122,23 @@ var parametricalSurfaces = (function () {
             name: 'Cross',
             list: 3,
             comment: 'adapted from the book "Graphismes sur IBM PC", de Gabriel Cuellar, Eyrolle 1987',
-            params: {A: 80, B: 30},
-            u: {begin: -100, end: 100, step: 5},
-            v: {begin: -100, end: 100, step: 5},
+            params: {A: 8, B: 3},
+            u: {begin: -10, end: 10, step: .5},
+            v: {begin: -10, end: 10, step: .5},
             fxyz: (u, v) => {
                 let fnc = (x, y) => {
-                    let z = 100;
+                    let z = 10;
                     if (x < -A || x > A) {
                         return z;
                     }
                     if (y > -B && y < B) {
-                        return 85;
+                        return 8;
                     }
                     if (y < -A || y > A) {
                         return z;
                     }
                     if (x > -B && x < B) {
-                        return 85;
+                        return 8;
                     }
                     return z;
                 };
@@ -1153,12 +1153,12 @@ var parametricalSurfaces = (function () {
             name: 'Box or Table ?',
             list: 3,
             comment: 'derived from "Cross" plus an "easing" function',
-            params: {A: 80, B: 30},
-            u: {begin: -100, end: 100, step: 10},
-            v: {begin: -100, end: 100, step: 10},
+            params: {A: 8, B: 3},
+            u: {begin: -10, end: 10, step: 1},
+            v: {begin: -10, end: 10, step: 1},
             fxyz: (u, v) => {
                 let fnc = (x, y) => {
-                    let z = 100;
+                    let z = 10;
                     if (x < -A || x > A) {
                         return easeInQuad(x, -A, A, A * 2);
                     }

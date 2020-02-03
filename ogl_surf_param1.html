@@ -10,7 +10,13 @@
     <link href="css/ogl-main.css" rel="stylesheet">
 </head>
 <body>
-<div class="Info" id="info"></div>
+<div class="Info" style="width:50%">
+    <div id="info"></div>
+    <a href="https://unsplash.com/collections/1417675/google-pixel-textures-collection" target="_blank">Free textures from Unsplash</a>
+    <p>Use the mouse wheel for zooming</p>
+    <button id="save_btn">Click here to Save Picture</button><a href="#" id="save_link" style="display: none" download>hidden</a><canvas id="snapshot" style="display: none"></canvas>
+</div>
+
 <script src="js/dat.gui.min.js"></script>
 <script src="js/parametricalSurfaces.js"></script>
 <script type="module" src="ogl_surf_param1.js"></script>
