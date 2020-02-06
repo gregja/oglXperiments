@@ -1,82 +1,5 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from './js/ogl/ogl.js';
 
-// When we use standard derivatives (dFdx & dFdy functions),
-// which are necessary for this effect, WebGL1 requires the
-// GL_OES_standard_derivatives extension, and WebGL2 complains
-// about the extension's existence. So unfortunately we're
-// forced to create a 300 es GLSL shader for WebGL2, and a 100 es
-// GLSL shader for WebGL1. There are only slight syntax changes.
-const vertex100 = /* glsl */ `
-            attribute vec3 position;
-            uniform mat4 modelViewMatrix;
-            uniform mat4 projectionMatrix;
-            varying vec4 vMVPos;
-            void main() {
-                vMVPos = modelViewMatrix * vec4(position, 1.0);
-                gl_Position = projectionMatrix * vMVPos;
-            }
-        `;
-
-const fragment100 = /* glsl */ `#extension GL_OES_standard_derivatives : enable
-            precision highp float;
-            uniform sampler2D tMap;
-            varying vec4 vMVPos;
-            vec3 normals(vec3 pos) {
-                vec3 fdx = dFdx(pos);
-                vec3 fdy = dFdy(pos);
-                return normalize(cross(fdx, fdy));
-            }
-            vec2 matcap(vec3 eye, vec3 normal) {
-                vec3 reflected = reflect(eye, normal);
-                float m = 2.8284271247461903 * sqrt(reflected.z + 1.0);
-                return reflected.xy / m + 0.5;
-            }
-            void main() {
-                vec3 normal = normals(vMVPos.xyz);
-                // We're using the matcap to add some shininess to the model
-                float mat = texture2D(tMap, matcap(normalize(vMVPos.xyz), normal)).g;
-
-                gl_FragColor.rgb = normal + mat;
-                gl_FragColor.a = 1.0;
-            }
-        `;
-
-const vertex300 = /* glsl */ `#version 300 es
-            in vec3 position;
-            uniform mat4 modelViewMatrix;
-            uniform mat4 projectionMatrix;
-            out vec4 vMVPos;
-            void main() {
-                vMVPos = modelViewMatrix * vec4(position, 1.0);
-                gl_Position = projectionMatrix * vMVPos;
-            }
-        `;
-
-const fragment300 = /* glsl */ `#version 300 es
-            precision highp float;
-            uniform sampler2D tMap;
-            in vec4 vMVPos;
-            out vec4 FragColor;
-            vec3 normals(vec3 pos) {
-                vec3 fdx = dFdx(pos);
-                vec3 fdy = dFdy(pos);
-                return normalize(cross(fdx, fdy));
-            }
-            vec2 matcap(vec3 eye, vec3 normal) {
-                vec3 reflected = reflect(eye, normal);
-                float m = 2.8284271247461903 * sqrt(reflected.z + 1.0);
-                return reflected.xy / m + 0.5;
-            }
-            void main() {
-                vec3 normal = normals(vMVPos.xyz);
-                // We're using the matcap to add some shininess to the model
-                float mat = texture(tMap, matcap(normalize(vMVPos.xyz), normal)).g;
-
-                FragColor.rgb = normal + mat;
-                FragColor.a = 1.0;
-            }
-        `;
-
 {
 
     let info = document.getElementById('info');
@@ -96,8 +19,7 @@ const fragment300 = /* glsl */ `#version 300 es
         '1=bia-andrade-PO8Woh4YBD8-unsplash.jpg',
         '2=ferdinand-stohr-NFs6dRTBgaM-unsplash.jpg',
         '3=evan-provan-V9A-_QKLElg-unsplash.jpg',
-        '4=neven-krcmarek-0qLzJkSXNdQ-unsplash.jpg',
-        '5=steve-johnson-5Oe8KFH5998-unsplash.jpg'
+        '4=steve-johnson-5Oe8KFH5998-unsplash.jpg'
     ];
 
     let settings = {
@@ -105,14 +27,7 @@ const fragment300 = /* glsl */ `#version 300 es
         gen_mode: generator_modes[0],
         texture: textures[0],
         name: current_shape.name,
-        isSpinning: false,
-        //   stroke_value: 1,
-        //   speed: 0.003,
-        //   scale: current_shape.scale,
-        //   init_scale: current_shape.scale,
-        //   default_colorU: "#ff0000", // previous ,"#5743e6"
-        //   default_colorV: "#336699", // previous "#d4541f",
-        //   default_colorMesh: "#000000",
+        isSpinning: false
     };
 
     function extract_code(value) {
@@ -125,26 +40,11 @@ const fragment300 = /* glsl */ `#version 300 es
         return sep[1];
     }
 
-    let shape3d = parametricalSurfaces.curvesInMesh(extract_code(settings.gen_mode));
-
-    let xportMesh = [];
-    shape3d.polygons.forEach(polygons => {
-        polygons.forEach(poly => {
-            let point = shape3d.points[poly];
-            xportMesh.push(point.x);
-            xportMesh.push(point.y);
-            xportMesh.push(point.z);
-        })
-    });
-
     const renderer = new Renderer({dpr: 2});
     const gl = renderer.gl;
     document.body.appendChild(gl.canvas);
     gl.clearColor(1, 1, 1, 1);
 
-    var campos = {x:0, y:0, z:0};
-
-//        const camera = new Camera(gl, {fov: -25});
     var camera = new Camera(gl);
     camera.position.set(2, 1, 0);
 
@@ -162,7 +62,7 @@ const fragment300 = /* glsl */ `#version 300 es
     let scene = new Transform();
     let texture = new Texture(gl);
 
-    if (settings.texture != null) {
+    if (extract_code(settings.texture) != 0) {
         const img = new Image();
         img.onload = () => texture.image = img;
         img.src = 'assets/' + extract_value(settings.texture);
@@ -177,12 +77,11 @@ const fragment300 = /* glsl */ `#version 300 es
         cullFace: null,
     });
 
-    let geometry = new Geometry(gl, {
-        position: {size: 3, data: new Float32Array(xportMesh)}
-    });
+    let shape3d = parametricalSurfaces.curvesInMesh(extract_code(settings.gen_mode));
+    let xportMesh = [];
+    let geometry, mesh;
 
-    let mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
-    mesh.setParent(scene);
+    shapeGenerator(settings, shape3d);
 
     var capture = false;
 
@@ -216,6 +115,26 @@ const fragment300 = /* glsl */ `#version 300 es
         }
     }
 
+    function shapeGenerator(obj, shape3d) {
+        let divider = 5;
+        xportMesh = [];
+        shape3d.polygons.forEach(polygons => {
+            polygons.forEach(poly => {
+                let point = shape3d.points[poly];
+                xportMesh.push(point.x/divider);
+                xportMesh.push(point.y/divider);
+                xportMesh.push(point.z/divider);
+            })
+        });
+        geometry = new Geometry(gl, {
+            position: {size: 3, data: new Float32Array(xportMesh)}
+        });
+        scene = new Transform();
+        new Mesh(gl, {mode: gl[obj.rendering], geometry, program});
+        mesh = new Mesh(gl, {mode: gl[obj.rendering], geometry, program});
+        mesh.setParent(scene);
+    }
+
     function addGui(obj) {
         let gui = new dat.gui.GUI();
 
@@ -225,21 +144,7 @@ const fragment300 = /* glsl */ `#version 300 es
             current_shape = parametricalSurfaces.setSurface(value);
             info.innerHTML = current_shape.name;
             shape3d = parametricalSurfaces.curvesInMesh(extract_code(obj.gen_mode));
-            xportMesh = [];
-            shape3d.polygons.forEach(polygons => {
-                polygons.forEach(poly => {
-                    let point = shape3d.points[poly];
-                    xportMesh.push(point.x);
-                    xportMesh.push(point.y);
-                    xportMesh.push(point.z);
-                })
-            });
-            geometry = new Geometry(gl, {
-                position: {size: 3, data: new Float32Array(xportMesh)}
-            });
-            scene = new Transform();
-            mesh = new Mesh(gl, {mode: gl[obj.rendering], geometry, program});
-            mesh.setParent(scene);
+            shapeGenerator(obj, shape3d);
         });
 
         var guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();  // none by default
@@ -270,39 +175,15 @@ const fragment300 = /* glsl */ `#version 300 es
         guiGenMode.onChange(function(value){
             obj.gen_mode = value;
             let shape3d = parametricalSurfaces.curvesInMesh(extract_code(obj.gen_mode));
-            xportMesh = [];
-            shape3d.polygons.forEach(polygons => {
-                polygons.forEach(poly => {
-                    let point = shape3d.points[poly];
-                    xportMesh.push(point.x);
-                    xportMesh.push(point.y);
-                    xportMesh.push(point.z);
-                })
-            });
-            geometry = new Geometry(gl, {
-                position: {size: 3, data: new Float32Array(xportMesh)}
-            });
-            scene = new Transform();
-            new Mesh(gl, {mode: gl[obj.rendering], geometry, program});
-            mesh = new Mesh(gl, {mode: gl[obj.rendering], geometry, program});
-            mesh.setParent(scene);
+            shapeGenerator(obj, shape3d);
         });
+
 
         let gui_spinning = gui.add(obj, 'isSpinning').listen();
         gui_spinning.onChange(function(value){
             obj.isSpinning = Boolean(value);
         });
 
-        //gui.add(obj, 'stroke_value').min(1).max(5).step(1);
-        //gui.add(obj, 'speed').min(0).max(.01).step(.001);
-        //gui.add(obj, 'scale').min(1).max(400).step(1);
-
-        /*
-        let f1 = gui.addFolder('Colors');
-        f1.addColor(obj, 'default_colorU');
-        f1.addColor(obj, 'default_colorV');
-        f1.addColor(obj, 'default_colorMesh');
-        */
     }
 
     document.addEventListener("DOMContentLoaded", function (event) {

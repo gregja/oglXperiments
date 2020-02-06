@@ -33,6 +33,8 @@ var shapes3dToolbox = (function () {
     const degToRad = angle => angle * DEG_TO_RAD;
     const radToDeg = angle => angle * ( 180 / PI );
 
+    const getRandomInt = (max) => Math.floor(Math.random() * Math.floor(max));
+
     /**
      * Cube generator
      * @param config.scale
@@ -40,7 +42,7 @@ var shapes3dToolbox = (function () {
      * @param config.yRot
      * @param config.zRot
      */
-    function generateCube(config) {
+    function generateCube(config={}) {
         var s = config.scale || 1;
         var xRot = config.xRot || null;
         var yRot = config.yRot || null;
@@ -2435,7 +2437,7 @@ var shapes3dToolbox = (function () {
      * @param config
      * @returns {{polygons: Array, edges: {a: *, b: *}[], points: {x: *, y: *, z: *}[]}}
      */
-    function customShape(config) {
+    function customShape(config={}) {
         var scale = config.scale || 1;
         var xRot = config.xRot || null;
         var yRot = config.yRot || null;
@@ -2443,12 +2445,12 @@ var shapes3dToolbox = (function () {
         var rendrMode = config.rendrMode || 1;   // 1=triangle strip standard ; 2=triangle strip buggy but pretty
         var rendrParts = config.rendrParts || 3;  // 1=Top ; 2=Bottom ; 3=Both
 
-        var count = config.pjs_count || 5;
-        var radius = config.pjs_radius || 5;
-        var twist = config.pjs_twist || 2;
-        var hcount = config.pjs_hcount || 1.5;
-        var phase = config.pjs_phase || 2;
-        var hradius = config.pjs_hradius || 5;
+        var count = config.count || 5;
+        var radius = config.radius || 5;
+        var twist = config.twist || 2;
+        var hcount = config.hcount || 1.5;
+        var phase = config.phase || 2;
+        var hradius = config.hradius || 5;
 
         var max_tri_strips = config.max_tri_strips || 30;
         var max_vertices = config.max_vertices || 72;
@@ -2471,7 +2473,7 @@ var shapes3dToolbox = (function () {
         for ( let h = 0; h < max_tri_strips; h++) {
             vertx[h] = [];
             verty[h] = [];
-            for ( let a = 0; a < max_vertices; a++) {
+            for ( let a = 0; a <= max_vertices; a++) {
                 let r = getR( a * 5.0, h * 5.0 );
                 vertx[h][a] = cos( degToRad( a * 5.0 )) * r;
                 verty[h][a] = sin( degToRad( a * 5.0 )) * r;
@@ -2482,7 +2484,7 @@ var shapes3dToolbox = (function () {
             coef_h = 2.65;
         }
         for ( let h = 1, hmax = max_tri_strips-1; h < hmax; h++) {
-            for ( let a = 0; a <= max_vertices; a++ ) {
+            for ( let a = 0; a < max_vertices; a++ ) {
                 let aa = a % max_vertices;
                 topShape.push({x:vertx[h][aa], y:h*5.0*coef_h, z:verty[h][aa]});
                 topShape.push({x:vertx[h-1][aa], y:(h-1)*5.0*coef_h, z:verty[h-1][aa]});
@@ -2491,8 +2493,6 @@ var shapes3dToolbox = (function () {
                 }
             }
         }
-
-        //console.log("topShape.length => ",topShape.length, topShape);
 
         // generate the top part only, or both parts
         if (rendrParts == 1 || rendrParts == 3) {
@@ -2745,6 +2745,24 @@ var shapes3dToolbox = (function () {
             {name: "equilibrium", fn:"generateEquilibrium", default:{xRot:50, yRot:40, zRot:10, scale:20}},
 
         ]
+    }
+
+    function getShapeByName(value) {
+        var list = getGeneratorsList();
+        let found = false;
+        list.forEach(item => {
+            if (item.name == value) {
+                found = item;
+            }
+        });
+        return found;
+    }
+
+
+    function getRndItemFromList(numlist=null) {
+        let list = getGeneratorsList();
+        let rnd_item = getRandomInt(list.length);
+        return list[rnd_item];
     }
 
     /**
@@ -3005,6 +3023,8 @@ var shapes3dToolbox = (function () {
         generateEquilibrium: generateEquilibrium,
         generateIcosahedron2: generateIcosahedron2,
         generateDodecahedron: generateDodecahedron,
-        excavateShape: excavateShape
+        excavateShape: excavateShape,
+        getShapeByName: getShapeByName,
+        getRndItemFromList: getRndItemFromList
     };
 })();
