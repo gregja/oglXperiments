@@ -1,93 +1,20 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from './js/ogl/ogl.js';
 
-// When we use standard derivatives (dFdx & dFdy functions),
-// which are necessary for this effect, WebGL1 requires the
-// GL_OES_standard_derivatives extension, and WebGL2 complains
-// about the extension's existence. So unfortunately we're
-// forced to create a 300 es GLSL shader for WebGL2, and a 100 es
-// GLSL shader for WebGL1. There are only slight syntax changes.
-const vertex100 = /* glsl */ `
-            attribute vec3 position;
-            uniform mat4 modelViewMatrix;
-            uniform mat4 projectionMatrix;
-            varying vec4 vMVPos;
-            void main() {
-                vMVPos = modelViewMatrix * vec4(position, 1.0);
-                gl_Position = projectionMatrix * vMVPos;
-            }
-        `;
-
-const fragment100 = /* glsl */ `#extension GL_OES_standard_derivatives : enable
-            precision highp float;
-            uniform sampler2D tMap;
-            varying vec4 vMVPos;
-            vec3 normals(vec3 pos) {
-                vec3 fdx = dFdx(pos);
-                vec3 fdy = dFdy(pos);
-                return normalize(cross(fdx, fdy));
-            }
-            vec2 matcap(vec3 eye, vec3 normal) {
-                vec3 reflected = reflect(eye, normal);
-                float m = 2.8284271247461903 * sqrt(reflected.z + 1.0);
-                return reflected.xy / m + 0.5;
-            }
-            void main() {
-                vec3 normal = normals(vMVPos.xyz);
-                // We're using the matcap to add some shininess to the model
-                float mat = texture2D(tMap, matcap(normalize(vMVPos.xyz), normal)).g;
-
-                gl_FragColor.rgb = normal + mat;
-                gl_FragColor.a = 1.0;
-            }
-        `;
-
-const vertex300 = /* glsl */ `#version 300 es
-            in vec3 position;
-            uniform mat4 modelViewMatrix;
-            uniform mat4 projectionMatrix;
-            out vec4 vMVPos;
-            void main() {
-                vMVPos = modelViewMatrix * vec4(position, 1.0);
-                gl_Position = projectionMatrix * vMVPos;
-            }
-        `;
-
-const fragment300 = /* glsl */ `#version 300 es
-            precision highp float;
-            uniform sampler2D tMap;
-            in vec4 vMVPos;
-            out vec4 FragColor;
-            vec3 normals(vec3 pos) {
-                vec3 fdx = dFdx(pos);
-                vec3 fdy = dFdy(pos);
-                return normalize(cross(fdx, fdy));
-            }
-            vec2 matcap(vec3 eye, vec3 normal) {
-                vec3 reflected = reflect(eye, normal);
-                float m = 2.8284271247461903 * sqrt(reflected.z + 1.0);
-                return reflected.xy / m + 0.5;
-            }
-            void main() {
-                vec3 normal = normals(vMVPos.xyz);
-                // We're using the matcap to add some shininess to the model
-                float mat = texture(tMap, matcap(normalize(vMVPos.xyz), normal)).g;
-
-                FragColor.rgb = normal + mat;
-                FragColor.a = 1.0;
-            }
-        `;
-
 {
 
     let info = document.getElementById('info');
 
-    var shape_params = {};
+    let shape_params = {};
 
-    var current_morphing = 0;
-    var max_morphing = -1;    // number of morphing vertices (calculated after loading)
+    let current_morphing = 0;
+    let max_morphing = -1;    // number of morphing vertices (calculated after loading)
 
     // path for local environment
-    var path = "assets/";
+    let path = "assets/";
+
+    let jquery_used = false;
+
+    let scene, mesh, texture, renderer, program, controls, gl, camera, geometry;
 
     // json files of the meshes :
     const list_shapes = [
@@ -110,7 +37,6 @@ const fragment300 = /* glsl */ `#version 300 es
         },*/
     ];
 
-    // let render_modes = ['LINES',  'LINE_STRIP', 'LINE_LOOP', 'TRIANGLES', 'TRIANGLE_STRIP', 'TRIANGLE_FAN', 'PAN', 'DOLLY_PAN', 'QUADS', 'QUAD_STRIP'];
     let render_modes = ['LINES',  'LINE_STRIP', 'TRIANGLES', 'TRIANGLE_STRIP', 'TRIANGLE_FAN'];
 
     // textures from : https://unsplash.com/collections/1417675/google-pixel-textures-collection
@@ -122,14 +48,18 @@ const fragment300 = /* glsl */ `#version 300 es
         '4=steve-johnson-5Oe8KFH5998-unsplash.jpg'
     ];
 
+    let speeds = ['slow', 'quick'];
     let settings = {
-        rendering: 'TRIANGLE_STRIP',
+        animal: list_shapes[0].name,
+        rendering: 'TRIANGLES',
         texture: textures[0],
         name: '8 cubes linked',
         isSpinning: false,
+        isRunning: false,
+        speed: "slow"
     };
 
-    let jquery_used = false;
+    let previous_isRunning = false; // used to detect a modification of the status during an animation frame
 
     /**
      * Load JSON file
@@ -161,14 +91,16 @@ const fragment300 = /* glsl */ `#version 300 es
      * @returns {Array}
      */
     function makeVertices(vertices) {
+        let divider = 10;
         let _vertices = [];
         let size = vertices.length;
         let offset = 0;
+        let ytranslate = 50;  // for better positioning in the frame
         while (offset < size) {
             let vertice = {};
-            vertice['x'] = vertices[offset++];
-            vertice['y'] = vertices[offset++];
-            vertice['z'] = vertices[offset++];
+            vertice['x'] = vertices[offset++]/divider;
+            vertice['y'] = (vertices[offset++]-ytranslate)/divider;
+            vertice['z'] = vertices[offset++]/divider;
             _vertices.push(vertice);
         }
         return _vertices;
@@ -190,40 +122,25 @@ const fragment300 = /* glsl */ `#version 300 es
             face[1] = faces[offset++];
             face[2] = faces[offset++];
 
-            //offset++;
-            for (var i = 0; i < 5; i++) offset++;
-            //offset++;
+            //offset++;  // offset to jump for optimal rendering with TRIANGLES mode
+            for (let i = 0; i < 5; i++) offset++;
+            //offset++;  // offset to jump for optimal rendering with TRIANGLES mode
 
             _faces.push(face);
         }
         return _faces;
     }
 
-    function generateGraph() {
-        let xportMesh = [];
-
-            let obj3d = generateShape(shape_params);
-            let div = 10;
-            obj3d.polygons.forEach(poly => {
-                console.log(poly);
-                poly.forEach(item => {
-                    let point = obj3d.points[item];
-                    xportMesh.push(point.x / div);
-                    xportMesh.push(point.y / div);
-                    xportMesh.push(point.z / div);
-                });
-            });
-
-
-        const renderer = new Renderer({dpr: 2});
-        const gl = renderer.gl;
+    function prepareGraph() {
+        renderer = new Renderer({dpr: 2});
+        gl = renderer.gl;
         document.body.appendChild(gl.canvas);
         gl.clearColor(1, 1, 1, 1);
 
-        var camera = new Camera(gl);
+        camera = new Camera(gl);
         camera.position.set(2, 1, 0);
 
-        var controls = new Orbit(camera, {
+        controls = new Orbit(camera, {
             target: new Vec3(0, 0.2, 0),
         });
 
@@ -235,8 +152,7 @@ const fragment300 = /* glsl */ `#version 300 es
         window.addEventListener('resize', resize, false);
         resize();
 
-        let scene = new Transform();
-        let texture = new Texture(gl);
+        texture = new Texture(gl);
 
         if (extract_code(settings.texture) != 0) {
             const img = new Image();
@@ -244,7 +160,7 @@ const fragment300 = /* glsl */ `#version 300 es
             img.src = 'assets/' + extract_value(settings.texture);
         }
 
-        const program = new Program(gl, {
+        program = new Program(gl, {
             vertex: renderer.isWebgl2 ? vertex300 : vertex100,
             fragment: renderer.isWebgl2 ? fragment300 : fragment100,
             uniforms: {
@@ -252,22 +168,66 @@ const fragment300 = /* glsl */ `#version 300 es
             },
             cullFace: null,
         });
+    }
 
-        let geometry = new Geometry(gl, {
+    function generateGraph() {
+        let xportMesh = [];
+
+        let divider = 10;
+
+        if (current_morphing != -1) {
+            let points = shape_params.morphings[current_morphing];
+            shape_params.points = points;
+        }
+
+        let obj3d = shape_params;
+
+        obj3d.polygons.forEach(poly => {
+            poly.forEach(item => {
+                if (obj3d.points != undefined) {
+                    let point = obj3d.points[item];
+                    xportMesh.push(point.x / divider);
+                    xportMesh.push(point.y / divider);
+                    xportMesh.push(point.z / divider);
+                }
+            });
+        });
+
+        geometry = new Geometry(gl, {
             position: {size: 3, data: new Float32Array(xportMesh)}
         });
 
-        let mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
+        scene = new Transform();
+        mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
         mesh.setParent(scene);
     }
 
-    var capture = false;
+    let capture = false;
 
     let save_btn = document.getElementById('save_btn');
     save_btn.addEventListener('click', (evt)=>{
         capture = true;
     }, false);
 
+    let handle_animation ;
+
+    function startAnimation() {
+        let timeout = 100;
+        if (settings.speed == 'quick') {
+            timeout = 50;
+        }
+        handle_animation = setInterval(() => {
+            current_morphing++;
+            if (current_morphing >= max_morphing) {
+                current_morphing = 0;
+            }
+            generateGraph();
+        }, timeout);
+    }
+
+    function stopAnimation() {
+        clearInterval(handle_animation);
+    }
 
     function update() {
         requestAnimationFrame(update);
@@ -276,6 +236,20 @@ const fragment300 = /* glsl */ `#version 300 es
             mesh.rotation.y -= 0.01;
             mesh.rotation.x += 0.01;
         }
+
+        if (settings.isRunning != previous_isRunning) {
+            // load a new set of vertices (fixed or from morphing depending of the context)
+            previous_isRunning = settings.isRunning;
+            if (settings.isRunning) {
+                current_morphing = 0;
+                startAnimation();
+            } else {
+                current_morphing = -1;
+                stopAnimation();
+            }
+            generateGraph();
+        }
+
         renderer.render({scene, camera});
 
         if (capture) {
@@ -296,7 +270,20 @@ const fragment300 = /* glsl */ `#version 300 es
     function addGui(obj) {
         let gui = new dat.gui.GUI();
 
-        var guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();  // none by default
+        let list_animals = list_shapes.map(item => item.name);
+        let guiAnimal = gui.add(obj, 'animal', list_animals, obj.animal).listen();
+        guiAnimal.onChange(function(value){
+            obj.animal = value;
+
+            let index = list_animals.indexOf(value);
+            let json_path = list_shapes[index].path;
+            loadOBJ(json_path, 1, () => {
+                generateGraph();
+                requestAnimationFrame(update);
+            });
+        });
+
+        let guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();
         guiRndrMode.onChange(function(value){
             obj.rendering = value;
             scene = new Transform();
@@ -304,7 +291,7 @@ const fragment300 = /* glsl */ `#version 300 es
             mesh.setParent(scene);
         });
 
-        var guiTexture = gui.add(obj, 'texture', textures, obj.texture).listen();  // none by default
+        let guiTexture = gui.add(obj, 'texture', textures, obj.texture).listen();  // none by default
         guiTexture.onChange(function(value){
             if (obj.texture != null) {
                 obj.texture = value;
@@ -325,16 +312,20 @@ const fragment300 = /* glsl */ `#version 300 es
             obj.isSpinning = Boolean(value);
         });
 
-        //gui.add(obj, 'stroke_value').min(1).max(5).step(1);
-        //gui.add(obj, 'speed').min(0).max(.01).step(.001);
-        //gui.add(obj, 'scale').min(1).max(400).step(1);
+        let gui_running = gui.add(obj, 'isRunning').listen();
+        gui_running.onChange(function(value){
+            obj.isRunning = Boolean(value);
+        });
 
-        /*
-        let f1 = gui.addFolder('Colors');
-        f1.addColor(obj, 'default_colorU');
-        f1.addColor(obj, 'default_colorV');
-        f1.addColor(obj, 'default_colorMesh');
-        */
+        let guiSpeed = gui.add(obj, 'speed', speeds, obj.speed).listen();
+        guiSpeed.onChange(function(value){
+            obj.speed = value;
+            if (obj.isRunning) {
+                stopAnimation();
+                startAnimation();
+            }
+        });
+
     }
 
     /**
@@ -372,7 +363,7 @@ const fragment300 = /* glsl */ `#version 300 es
             'Access-Control-Allow-Origin': path,
             'Content-Type': 'text/html'
         });
-        var myInit = {
+        let myInit = {
             method: 'GET',
             headers: myHeaders,
             mode: 'no-cors',
@@ -380,14 +371,14 @@ const fragment300 = /* glsl */ `#version 300 es
             cache: 'default'
         };
 
-        var myRequest = new Request(url, myInit);
+        let myRequest = new Request(url, myInit);
 
         fetch(myRequest, myInit).then(response => {
             if (response.ok) {
                 response.text().then(function (content) {
                     const datas = JSON.parse(content);
-                    console.log(datas.vertices.length);
-                    console.log(datas.faces.length);
+                    //console.log(datas.vertices.length);
+                    //console.log(datas.faces.length);
 
                     let points = makeVertices(datas.vertices);
                     let morphings = datas.morphTargets.map(item => makeVertices(item.vertices));
@@ -399,7 +390,7 @@ const fragment300 = /* glsl */ `#version 300 es
                     onload();
                 });
             } else {
-                console.error('server githack response : ' + response.status);
+                console.error('server response : ' + response.status);
             }
         }).catch(err => {
             console.error(err);
@@ -411,6 +402,7 @@ const fragment300 = /* glsl */ `#version 300 es
 
         let json_path = list_shapes[0].path;
         loadOBJ(json_path, 1, () => {
+            prepareGraph();
             generateGraph();
             addGui(settings);
             requestAnimationFrame(update);
