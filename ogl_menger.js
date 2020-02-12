@@ -1,4 +1,4 @@
-import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from './js/ogl/ogl.js';
+import {Renderer, Camera, Transform, Texture, Program, Geometry, Box, Mesh, Vec3, Orbit} from './js/ogl/ogl.js';
 
 {
 
@@ -10,8 +10,8 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orb
 
     let render_modes = ['LINES',  'LINE_STRIP', 'TRIANGLES', 'TRIANGLE_STRIP', 'TRIANGLE_FAN'];
 
-    let divider = 100;  // divider to adapt shapes to the WebGL space coordinates
-    let geometry, mesh; // global variables to access in different contexts
+    //let divider = 100;  // divider to adapt shapes to the WebGL space coordinates
+    //let geometry, mesh; // global variables to access in different contexts
 
     // textures from : https://unsplash.com/collections/1417675/google-pixel-textures-collection
     let textures = [
@@ -23,33 +23,31 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orb
     ];
 
     let settings = {
-        rendering: 'TRIANGLE_STRIP',
+        rendering: 'TRIANGLES',
         texture: textures[0],
         isSpinning: false,
         level:list_levels[0]
     };
 
+    let scene;
+
     function shapeGenerator(rendering) {
 
-        let objref = {
-            scene: scene,
-            program: program,
-            gl: gl,
-            rendering: gl[rendering]
+        if (settings.level == '1') {
+            scene = new Transform();
+        }
+
+        let fncmaster = function (config) {
+        //    console.log(config);
+            const geometry = new Box(gl, {width: config.width, height: config.height, depth: config.depth});
+            const shape =  new Mesh(gl, {mode: gl[rendering], geometry, program});
+            shape.position.set(config.x, config.y, config.z);
+            shape.setParent(scene);
         };
 
-        var shape_params = {x:0, y:0, z:0, r:250, level:1, maxLevel: settings.level, ref:objref};
+        var shape_params = {x:0, y:0, z:0, r:250, level:1, maxLevel: Number(settings.level)};
+        let shape3d = generateShape(shape_params, fncmaster);
 
-        let shape3d = generateShape(shape_params);
-
-/*
-        geometry = new Geometry(gl, {
-            position: {size: 3, data: new Float32Array(xportMesh)}
-        });
-        scene = new Transform();
-        mesh = new Mesh(gl, {mode: gl[rendering], geometry, program});
-        mesh.setParent(scene);
-        */
     }
 
     function extract_code(value) {
@@ -67,6 +65,8 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orb
     document.body.appendChild(gl.canvas);
     gl.clearColor(1, 1, 1, 1);
 
+    let texture = new Texture(gl);
+
     let camera = new Camera(gl);
     camera.position.set(2, 1, 0);
 
@@ -82,15 +82,6 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orb
     }
     window.addEventListener('resize', resize, false);
     resize();
-
-    let scene = new Transform();
-    let texture = new Texture(gl);
-
-    if (settings.texture != null) {
-        const img = new Image();
-        img.onload = () => texture.image = img;
-        img.src = 'assets/' + extract_value(settings.texture);
-    }
 
     const program = new Program(gl, {
         vertex: renderer.isWebgl2 ? vertex300 : vertex100,
@@ -141,19 +132,13 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orb
         let guiLevel = gui.add(obj, 'level', list_levels, obj.level).listen();  // none by default
         guiLevel.onChange(function(value){
             obj.level = Number(value);
-            /*
-            scene = new Transform();
-            let mesh = new Mesh(gl, {mode: gl[value], geometry, program});
-            mesh.setParent(scene);
-            */
+            shapeGenerator(settings.rendering);
         });
 
         let guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();  // none by default
         guiRndrMode.onChange(function(value){
             obj.rendering = value;
-            scene = new Transform();
-            let mesh = new Mesh(gl, {mode: gl[value], geometry, program});
-            mesh.setParent(scene);
+            shapeGenerator(settings.rendering);
         });
 
         let guiTexture = gui.add(obj, 'texture', textures, obj.texture).listen();  // none by default
