@@ -10,8 +10,11 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Box, Mesh, Vec3
 
     let render_modes = ['LINES',  'LINE_STRIP', 'TRIANGLES', 'TRIANGLE_STRIP', 'TRIANGLE_FAN'];
 
-    //let divider = 100;  // divider to adapt shapes to the WebGL space coordinates
-    //let geometry, mesh; // global variables to access in different contexts
+    let tasks = [];
+
+    let blocks_array = [];
+    let block_current = -999;
+    let block_maximum = -999;
 
     // textures from : https://unsplash.com/collections/1417675/google-pixel-textures-collection
     let textures = [
@@ -25,28 +28,63 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Box, Mesh, Vec3
     let settings = {
         rendering: 'TRIANGLES',
         texture: textures[0],
-        isSpinning: false,
         level:list_levels[0]
     };
 
     let scene;
 
-    function shapeGenerator(rendering) {
+    let shapemaster = function (config, num_task) {
+        if (num_task !== false) {
+            tasks[num_task] = false;  // flag to know that the task is ended
+        }
+        const geometry = new Box(gl, {width: config.side, height: config.side, depth: config.side});
+        const shape =  new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
+        shape.position.set(config.x, config.y, config.z);
+        shape.setParent(scene);
+    };
 
-        if (settings.level == '1') {
-            scene = new Transform();
+    function shapeGenerator() {
+
+        scene = new Transform();
+
+        var maxLevel = Number(settings.level);
+        var shape_params = {x:0, y:0, z:0, r:1, level:1, maxLevel:maxLevel };
+        var blocks = generateShape(shape_params);
+        let imax = blocks.length;
+        console.log('Number of blocks to generate : '+imax);
+
+        if (tasks.length > 0) {
+            // stop remanining tasks before initializing a new series of tasks
+            tasks.forEach(task => {
+               if (task != false) {
+                   clearTimeout(task);
+               }
+            });
+            tasks = [];
         }
 
-        let fncmaster = function (config) {
-        //    console.log(config);
-            const geometry = new Box(gl, {width: config.width, height: config.height, depth: config.depth});
-            const shape =  new Mesh(gl, {mode: gl[rendering], geometry, program});
-            shape.position.set(config.x, config.y, config.z);
-            shape.setParent(scene);
-        };
+        blocks_array = [];
+        block_current = -999;
+        block_maximum = -999;
 
-        var shape_params = {x:0, y:0, z:0, r:250, level:1, maxLevel: Number(settings.level)};
-        let shape3d = generateShape(shape_params, fncmaster);
+        if (maxLevel < 3) {
+            let timer = 1;
+            if (maxLevel == 2) {
+                timer = 100;
+            }
+            for (let i = 0; i < imax; i++) {
+                let block = blocks[i];
+                tasks[i] = setTimeout(() => {
+                    shapemaster(block, i);
+                }, timer);
+            }
+        } else {
+            block_current = -1;
+            for (let i = 0; i < imax; i++) {
+                blocks_array[i] = blocks[i];
+            }
+            block_maximum = imax;
+        }
 
     }
 
@@ -92,7 +130,7 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Box, Mesh, Vec3
         cullFace: null,
     });
 
-    shapeGenerator(settings.rendering);
+    shapeGenerator();
 
     let capture = false;
 
@@ -102,13 +140,16 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Box, Mesh, Vec3
     }, false);
 
     function update() {
-        requestAnimationFrame(update);
-        controls.update();
 
-        if (settings.isSpinning) {
-            mesh.rotation.y -= 0.01;
-            mesh.rotation.x += 0.01;
+        if (block_current != -999) {
+            block_current++;
+            if (block_current < block_maximum) {
+                let block = blocks_array[block_current];
+                shapemaster(block, false);
+            }
         }
+
+        controls.update();
 
         renderer.render({scene, camera});
 
@@ -124,6 +165,8 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Box, Mesh, Vec3
             save_link.setAttribute('href', data);
             save_link.click();
         }
+
+        requestAnimationFrame(update);
     }
 
     function addGui(obj) {
@@ -132,13 +175,13 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Box, Mesh, Vec3
         let guiLevel = gui.add(obj, 'level', list_levels, obj.level).listen();  // none by default
         guiLevel.onChange(function(value){
             obj.level = Number(value);
-            shapeGenerator(settings.rendering);
+            shapeGenerator();
         });
 
         let guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();  // none by default
         guiRndrMode.onChange(function(value){
             obj.rendering = value;
-            shapeGenerator(settings.rendering);
+            shapeGenerator();
         });
 
         let guiTexture = gui.add(obj, 'texture', textures, obj.texture).listen();  // none by default
@@ -155,11 +198,6 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Box, Mesh, Vec3
                     program.uniforms.tMap = {value: texture};
                 }
             }
-        });
-
-        let gui_spinning = gui.add(obj, 'isSpinning').listen();
-        gui_spinning.onChange(function(value){
-            obj.isSpinning = Boolean(value);
         });
 
     }

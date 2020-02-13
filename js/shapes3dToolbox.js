@@ -2300,55 +2300,7 @@ var shapes3dToolbox = (function () {
      * @param config.maxLevel
      * @param config.ref  (zdog object master)
      */
-     function spongeGenerator(config, drawfnc) {
-        var x, y, z, r, level, objmaster, maxLevel, engine;
-        x = config.x;
-        y = config.y;
-        z = config.z;
-        r = config.r;
-        level = config.level;
-        maxLevel = config.maxLevel || 2;
-        if (level > 0 && level <= maxLevel && level <= 3) {
-            let newR = r/3;
-            let pos = [];
-            for (let i = -1; i < 2; i++) {
-                for (let j = -1; j < 2; j++) {
-                    for (let k = -1; k < 2; k++) {
-                        // Of the mid boxes always at least 2 coordinates are 0. Thus for those not to be drawn boxes: sum <= 1.
-                        // Inspired by: The Coding Train: Coding Challenge #2: Menger Sponge Fractal, https://youtu.be/LG8ZK-rRkXo
-                        let sum = abs(i) + abs(j)+ abs(k);
-                        if (sum > 1) {
-                            let t = pos.length;
-                            let divider = 200;
-                            pos[t] = { x:(x+i*newR)/divider, y:(y+j*newR)/divider, z:(z+k*newR)/divider };
-                            //console.log(pos[t], newR);
-                            if (level === maxLevel) {
-                                drawfnc({x: pos[t].x, y:pos[t].y, z:pos[t].z, width:newR/divider, height:newR/divider, depth:newR/divider});
-                            }
-                        }
-                    }
-                }
-            }
-            // recursion
-            let nextLevel = level + 1;
-            for (let t=0, tmax=pos.length; t < tmax; t++) {
-                spongeGenerator({x:pos[t].x, y:pos[t].y, z:pos[t].z, r:newR, level:nextLevel, maxLevel: maxLevel}, drawfnc);
-            }
-        }
-    }
-
-    /**
-     * Menger Sponge Fractal Generator
-     * Adaptation of an algorithm of Frido VerWeij : https://librayRot.fridoverweij.com
-     * @param config.x
-     * @param config.y
-     * @param config.z
-     * @param config.r
-     * @param config.level
-     * @param config.maxLevel
-     * @param config.ref  (zdog object master)
-     */
-    function spongeGeneratorV0(config) {
+    function spongeGenerator(config) {
         var datablocks = [];
 
         function generator(config){
@@ -2359,7 +2311,7 @@ var shapes3dToolbox = (function () {
             r = config.r;
             level = config.level;
             maxLevel = config.maxLevel || 2;
-            if (level > 0 && level <= maxLevel && level <= 3) {
+            if (level > 0 && level <= maxLevel && level <= 4) {
                 let newR = r / 3;
                 let pos = [];
                 for (let i = -1; i < 2; i++) {
@@ -2373,16 +2325,10 @@ var shapes3dToolbox = (function () {
                                 pos[t] = {x: x + i * newR, y: y + j * newR, z: z + k * newR};
                                 if (level === maxLevel) {
                                     datablocks.push({
-                                        width: newR,
-                                        height: newR,
-                                        depth: newR,
-                                        pos: {x: pos[t].x, y: pos[t].y, z: pos[t].z},
-                                        stroke: false,
-                                        color: '#C25', // default face color
-                                        leftFace: '#EA0',
-                                        rightFace: '#E62',
-                                        topFace: '#ED0',
-                                        bottomFace: '#636',
+                                        side: newR,
+                                        x: pos[t].x,
+                                        y: pos[t].y,
+                                        z: pos[t].z
                                     });
                                 }
                             }
@@ -2445,16 +2391,10 @@ var shapes3dToolbox = (function () {
                                 pos[t] = {x: x + i * newR, y: y + j * newR, z: z + k * newR};
                                 if (level === maxLevel) {
                                     datablocks.push({
-                                        width: newR,
-                                        height: newR,
-                                        depth: newR,
-                                        pos: {x: pos[t].x, y: pos[t].y, z: pos[t].z},
-                                        stroke: false,
-                                        color: '#C25', // default face color
-                                        leftFace: '#EA0',
-                                        rightFace: '#E62',
-                                        topFace: '#ED0',
-                                        bottomFace: '#636',
+                                        side: newR,
+                                        x: pos[t].x,
+                                        y: pos[t].y,
+                                        z: pos[t].z
                                     });
                                 }
                             }
