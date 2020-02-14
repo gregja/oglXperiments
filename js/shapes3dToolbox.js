@@ -775,42 +775,46 @@ var shapes3dToolbox = (function () {
             yScale = config.yScale || 1,
             zScale = config.zScale || 1;
 
+        var xTranslate = config.xTranslate || 0;
+        var yTranslate = config.yTranslate || 0;
+        var zTranslate = config.zTranslate || 0;
+
         var xRot = config.xRot || null;
         var yRot = config.yRot || null;
         var zRot = config.zRot || null;
 
         var nodes = [{
-            x: -1 * xScale,
-            y: 1 * yScale,
-            z: -1 * zScale
+            x: -1 * xScale + xTranslate,
+            y: 1 * yScale + yTranslate,
+            z: -1 * zScale + zTranslate
         }, {
-            x: 1 * xScale,
-            y: 1 * yScale,
-            z: -1 * zScale
+            x: 1 * xScale + xTranslate,
+            y: 1 * yScale + yTranslate,
+            z: -1 * zScale + zTranslate
         }, {
-            x: 1 * xScale,
-            y: -1 * yScale,
-            z: -1 * zScale
+            x: 1 * xScale + xTranslate,
+            y: -1 * yScale + yTranslate,
+            z: -1 * zScale + zTranslate
         }, {
-            x: -1 * xScale,
-            y: -1 * yScale,
-            z: -1 * zScale
+            x: -1 * xScale + xTranslate,
+            y: -1 * yScale + yTranslate,
+            z: -1 * zScale + zTranslate
         }, {
-            x: -1 * xScale,
-            y: 1 * yScale,
-            z: 1 * zScale
+            x: -1 * xScale + xTranslate,
+            y: 1 * yScale + yTranslate,
+            z: 1 * zScale + zTranslate
         }, {
-            x: 1 * xScale,
-            y: 1 * yScale,
-            z: 1 * zScale
+            x: 1 * xScale + xTranslate,
+            y: 1 * yScale + yTranslate,
+            z: 1 * zScale + zTranslate
         }, {
-            x: 1 * xScale,
-            y: -1 * yScale,
-            z: 1 * zScale
+            x: 1 * xScale + xTranslate,
+            y: -1 * yScale + yTranslate,
+            z: 1 * zScale + zTranslate
         }, {
-            x: -1 * xScale,
-            y: -1 * yScale,
-            z: 1 * zScale
+            x: -1 * xScale + xTranslate,
+            y: -1 * yScale + yTranslate,
+            z: 1 * zScale + zTranslate
         }];
 
         rotateZ3D(zRot, nodes, true);
@@ -2741,11 +2745,14 @@ var shapes3dToolbox = (function () {
     function getGeneratorsList2() {
         return [
             {name: "cube", fn:"generateCube", default:{scale:200, xRot:50, yRot:40, zRot:45}},
+            {name: "sphere1", fn:"generateSphere1", default:{scale:200, lats:20, longs:20}},
             {name: "icosahedron", fn:"generateIcosahedron", default:{scale:200}},
             {name: "icosahedron2", fn:"generateIcosahedron2", default:{scale:30}},
             {name: "dodecahedron (pretty bug)", fn:"generateDodecahedron", default:{scale:30}},
             {name: "tetrahedron", fn:"generateTetrahedron", default:{scale:200, xRot:50, yRot:40, zRot:10}},
             {name: "pyramid", fn:"generatePyramid", default:{scale:200}},
+            {name: "cylinder1", fn:"generateCylinder1", default:{radius:50, length:200, strips:30, gradient_color:1}},
+            {name: "cylinder2", fn:"generateCylinder2", default:{radius:50, length:200, xRot:50, yRot:40, zRot:10, gradient_color:2}},
             {name: "cuboid1", fn:"generateCuboid1", default:{xScale:200, yScale:60, zScale:100, xRot:50, yRot:40, zRot:45}},
             {name: "cuboid2", fn:"generateCuboid2", default:{xLength:200, yLength:60, zLength:100, xRot:50, yRot:40, zRot:10, crossing:true}},
             {name: "conicalFrustum", fn:"generateConicalFrustum", default:{xRot:50, yRot:40, zRot:10, scale:3, crossing:false, gradient_color:2}},
@@ -3037,6 +3044,7 @@ var shapes3dToolbox = (function () {
         generateDodecahedron: generateDodecahedron,
         excavateShape: excavateShape,
         getShapeByName: getShapeByName,
-        getRndItemFromList: getRndItemFromList
+        getRndItemFromList: getRndItemFromList,
+        getRandomInt: getRandomInt
     };
 })();

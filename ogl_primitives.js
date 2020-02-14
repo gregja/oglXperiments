@@ -23,7 +23,7 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orb
         '1=bia-andrade-PO8Woh4YBD8-unsplash.jpg',
         '2=ferdinand-stohr-NFs6dRTBgaM-unsplash.jpg',
         '3=evan-provan-V9A-_QKLElg-unsplash.jpg',
-        '4=steve-johnson-5Oe8KFH5998-unsplash.jpg'
+        '4=steve-johnson-5Oe8KFH5998-unsplash.jpg',
     ];
 
     let settings = {

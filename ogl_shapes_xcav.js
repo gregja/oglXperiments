@@ -1,13 +1,21 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from './js/ogl/ogl.js';
 
 {
+
     let info = document.getElementById('info');
-    info.innerHTML = '8 cubes linked V1';
 
-    var list_shapes = shapes3dToolbox.getEightCubesLinked();
+    let list_shapes = shapes3dToolbox.getGeneratorsList2();
+    let shapes3DList = [];
+    list_shapes.forEach((item, id) => {
+        shapes3DList.push(item.name);
+    });
+
+    let current_shape = list_shapes[shapes3dToolbox.getRandomInt(list_shapes.length)];
     let effect = shapes3dToolbox.excavateShape;
-
     let render_modes = ['LINES',  'LINE_STRIP', 'TRIANGLES', 'TRIANGLE_STRIP', 'TRIANGLE_FAN'];
+
+    let divider = 500;  // divider to adapt shapes to the WebGL space coordinates
+    let geometry, mesh; // global variables to access in different contexts
 
     // textures from : https://unsplash.com/collections/1417675/google-pixel-textures-collection
     let textures = [
@@ -18,11 +26,43 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orb
         '4=steve-johnson-5Oe8KFH5998-unsplash.jpg'
     ];
 
-    let settings = {
-        rendering: 'TRIANGLE_FAN',  // best rendering with TRIANGLE_FAN
-        texture: textures[0],
+    let thickness_modes = [1, 2, 4, 8, 10, 12, 16];
+    let edge_modes = [1, 2, 3];
 
+    let settings = {
+        rendering: 'TRIANGLE_STRIP',
+        texture: textures[0],
+        name: current_shape.name,
+        isSpinning: false,
+        edgeMode: edge_modes[2],   // best rendering with that mode
+        thickness : thickness_modes[3]
     };
+
+    function shapeGenerator() {
+        info.innerHTML = "3D object : " + settings.name;
+        let current_shape = shapes3dToolbox.getShapeByName(settings.name);
+        let shape3dTemp = eval(`shapes3dToolbox.${current_shape.fn}(current_shape.default)`);
+
+        let shape3d = effect(shape3dTemp, {bridge_mode: settings.edgeMode, thickness_ratio: settings.thickness});
+
+        let xportMesh = [];
+
+        shape3d.polygons.forEach(polygons => {
+            polygons.forEach(poly => {
+                let point = shape3d.points[poly];
+                xportMesh.push(point.x/divider);
+                xportMesh.push(point.y/divider);
+                xportMesh.push(point.z/divider);
+            })
+        });
+
+        geometry = new Geometry(gl, {
+            position: {size: 3, data: new Float32Array(xportMesh)}
+        });
+        scene = new Transform();
+        mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
+        mesh.setParent(scene);
+    }
 
     function extract_code(value) {
         let sep = value.split('=');
@@ -56,7 +96,7 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orb
     let scene = new Transform();
     let texture = new Texture(gl);
 
-    if (extract_code(settings.texture) != 0) {
+    if (settings.texture != null) {
         const img = new Image();
         img.onload = () => texture.image = img;
         img.src = 'assets/' + extract_value(settings.texture);
@@ -71,51 +111,28 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orb
         cullFace: null,
     });
 
-    function generateMeshes() {
-        list_shapes.forEach(shape => {
-            let xportMesh = [];
-            let generateShape = shapes3dToolbox[shape.fn];
-            let shape_params = shape.default;
-            let obj3d = generateShape(shape_params);
-            let divider = 100;
-            obj3d.polygons.forEach(poly => {
-                poly.forEach(item => {
-                    let point = obj3d.points[item];
-                    xportMesh.push(point.x/divider);
-                    xportMesh.push(point.y/divider);
-                    xportMesh.push(point.z/divider);
-                });
-            });
+    shapeGenerator();
 
-            let geometry = new Geometry(gl, {
-                position: {size: 3, data: new Float32Array(xportMesh)}
-            });
-
-            let mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
-            mesh.setParent(scene);
-        });
-
-    }
-
-    generateMeshes();
-
-    var capture = false;
+    let capture = false;
 
     let save_btn = document.getElementById('save_btn');
     save_btn.addEventListener('click', (evt)=>{
         capture = true;
     }, false);
 
-
     function update() {
-        requestAnimationFrame(update);
+
         controls.update();
+
+        if (settings.isSpinning) {
+            mesh.rotation.y -= 0.01;
+            mesh.rotation.x += 0.01;
+        }
 
         renderer.render({scene, camera});
 
         if (capture) {
             capture = false;
-
             let snapshot = document.getElementById('snapshot');
             snapshot.width = gl.canvas.width;
             snapshot.height = gl.canvas.height;
@@ -126,19 +143,30 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orb
             save_link.setAttribute('href', data);
             save_link.click();
         }
+
+        requestAnimationFrame(update);
     }
 
     function addGui(obj) {
         let gui = new dat.gui.GUI();
 
-        var guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();  // none by default
+        // Choose from accepted values
+        let guiSurfList = gui.add(obj, 'name', shapes3DList, obj.name).listen();
+        guiSurfList.onChange(function(value){
+            console.log('mouchard ', value);
+            obj.name = value;
+            shapeGenerator();
+        });
+
+        let guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();
         guiRndrMode.onChange(function(value){
             obj.rendering = value;
             scene = new Transform();
-            generateMeshes();
+            let mesh = new Mesh(gl, {mode: gl[value], geometry, program});
+            mesh.setParent(scene);
         });
 
-        var guiTexture = gui.add(obj, 'texture', textures, obj.texture).listen();  // none by default
+        let guiTexture = gui.add(obj, 'texture', textures, obj.texture).listen();
         guiTexture.onChange(function(value){
             if (obj.texture != null) {
                 obj.texture = value;
@@ -152,6 +180,39 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orb
                     program.uniforms.tMap = {value: texture};
                 }
             }
+        });
+
+        let guiThickness = gui.add(obj, 'thickness', thickness_modes, obj.thickness).listen();
+        guiThickness.onChange(function(value){
+            if (obj.thickness != null) {
+                obj.thickness = value;
+
+                // TODO : à compléter
+                scene = new Transform();
+                mesh = new Mesh(gl, {mode: gl[value], geometry, program});
+                mesh.setParent(scene);
+
+                shapeGenerator();
+            }
+        });
+
+        let guiEdgemode = gui.add(obj, 'edgeMode', edge_modes, obj.edgeMode).listen();
+        guiEdgemode.onChange(function(value){
+            if (obj.edgeMode != null) {
+                obj.edgeMode = value;
+
+                // TODO : à compléter
+                scene = new Transform();
+                mesh = new Mesh(gl, {mode: gl[value], geometry, program});
+                mesh.setParent(scene);
+
+                shapeGenerator();
+            }
+        });
+
+        let gui_spinning = gui.add(obj, 'isSpinning').listen();
+        gui_spinning.onChange(function(value){
+            obj.isSpinning = Boolean(value);
         });
 
     }
