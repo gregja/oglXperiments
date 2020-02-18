@@ -1,69 +1,34 @@
-import {Renderer, Camera, Transform, Texture, Program, Box, Mesh, Vec3, Orbit} from './js/ogl/ogl.js';
+import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from './js/ogl/ogl.js';
 import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} from "./js/ogl_constants.js";
 {
+    const DEG_TO_RAD = Math.PI / 180;
+    const degToRad = angle => angle * DEG_TO_RAD;
+
     let info = document.getElementById('info');
-    info.innerHTML = "3D object : Table" ;
+    info.innerHTML = "3D object : Weird sphere" ;
 
-    let scene, texture;
-    let shapes = [];
+    let divider = 500;  // divider to adapt shapes to the WebGL space coordinates
+    let geometry, mesh; // global variables to access in different contexts
 
+    // examples for ures & vres : (4, 20) or (30, 30) or (6, 6)
     let settings = {
         rendering: 'TRIANGLE_STRIP',
         texture: textures[0],
-        isSpinning: false
+        isSpinning: false,
+        maxTriangles: 20,
+        depth: 50,
+        tiltAngle: 5
     };
 
     function shapeGenerator() {
-        shapes = [];
+        let xportMesh = shapes3dToolbox.ribbon(settings.maxTriangles, settings.depth, settings.tiltAngle);
 
-        var skeleton = {
-            position: [0, -3, 0],
-            scale: [6, 0.5, 6],
-            rotation: [0, 0, 0],
-            children: [
-                { // Red table leg
-                    id: "redLeg",
-                    position: [-2, -1.5, -2],
-                    scale: [1, 3, 1],
-                    rotation: [0, 0, 0],
-                    geometry: 'boxGeometry',
-                },
-                { // Green table leg
-                    id: "greenLeg",
-                    position: [2, -1.5, -2],
-                    scale: [1, 3, 1],
-                    rotation: [0, 0, 0],
-                    geometry: 'boxGeometry',
-                },
-                {// Blue table leg
-                    id: "blueLeg",
-                    position: [2, -1.5, 2],
-                    scale: [1, 3, 1],
-                    rotation: [0, 0, 0],
-                    geometry: 'boxGeometry',
-                },
-                {  // Yellow table leg
-                    id: "yellowLeg",
-                    position: [-2, -1.5, 2],
-                    scale: [1, 3, 1],
-                    rotation: [0, 0, 0],
-                    geometry: 'boxGeometry',
-                }
-            ]
-        };
-
-        const geometry = new Box(gl, {width: skeleton.scale[0], height: skeleton.scale[1], depth: skeleton.scale[2]});
-        const shape =  new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
-        shape.position.set(skeleton.position[0], skeleton.position[1], skeleton.position[2]);
-        shape.setParent(scene);
-        shapes.push(shape);
-
-        skeleton.children.forEach(config => {
-            const geometry = new Box(gl, {width: config.scale[0], height: config.scale[1], depth: config.scale[2]});
-            const shape =  new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
-            shape.position.set(config.position[0], config.position[1], config.position[2]);
-            shape.setParent(shapes[0]);
+        geometry = new Geometry(gl, {
+            position: {size: 3, data: new Float32Array(xportMesh)}
         });
+        scene = new Transform();
+        mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
+        mesh.setParent(scene);
     }
 
     function extract_code(value) {
@@ -95,10 +60,10 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     window.addEventListener('resize', resize, false);
     resize();
 
-    scene = new Transform();
-    texture = new Texture(gl);
+    let scene = new Transform();
+    let texture = new Texture(gl);
 
-    if (extract_code(settings.texture) != 0) {
+    if (settings.texture != null) {
         const img = new Image();
         img.onload = () => texture.image = img;
         img.src = 'assets/' + extract_value(settings.texture);
@@ -127,9 +92,8 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
         controls.update();
 
         if (settings.isSpinning) {
-            shapes[0].rotation.y -= 0.01;
-            shapes[0].rotation.x += 0.01;
-            shapes[0].rotation.z += 0.01;
+            mesh.rotation.y -= 0.01;
+            mesh.rotation.x += 0.01;
         }
 
         renderer.render({scene, camera});
@@ -151,10 +115,28 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     function addGui(obj) {
         let gui = new dat.gui.GUI();
 
+        let guimaxTriangles = gui.add(obj, 'maxTriangles').min(1).max(200).step(1).listen();
+        guimaxTriangles.onChange(function(value){
+            obj.maxTriangles = Number(value);
+            shapeGenerator();
+        });
+
+        let guiDepth = gui.add(obj, 'depth').min(1).max(200).step(1).listen();
+        guiDepth.onChange(function(value){
+            obj.depth = Number(value);
+            shapeGenerator();
+        });
+
+        let guiTiltAngle = gui.add(obj, 'tiltAngle').min(1).max(90).step(1).listen();
+        guiTiltAngle.onChange(function(value){
+            obj.tiltAngle = Number(value);
+            shapeGenerator();
+        });
+
+
         let guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();  // none by default
         guiRndrMode.onChange(function(value){
             obj.rendering = value;
-            scene = new Transform();
             shapeGenerator();
         });
 

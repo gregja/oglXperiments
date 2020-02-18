@@ -1,5 +1,5 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from './js/ogl/ogl.js';
-
+import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} from "./js/ogl_constants.js";
 {
 
     let info = document.getElementById('info');
@@ -10,17 +10,6 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orb
     info.innerHTML = current_shape.name;
 
     let generator_modes = ['0=Quad', '1=Triangle (1/2)', '2=Triangle (2/2)']; //(0=quad ; 1=triangle, draw one facet by two; 2=triangle, draw all facets)
-    // let render_modes = ['LINES',  'LINE_STRIP', 'LINE_LOOP', 'TRIANGLES', 'TRIANGLE_STRIP', 'TRIANGLE_FAN', 'PAN', 'DOLLY_PAN', 'QUADS', 'QUAD_STRIP'];
-    let render_modes = ['LINES',  'LINE_STRIP', 'TRIANGLES', 'TRIANGLE_STRIP', 'TRIANGLE_FAN'];
-
-    // textures from : https://unsplash.com/collections/1417675/google-pixel-textures-collection
-    let textures = [
-        '0=None',
-        '1=bia-andrade-PO8Woh4YBD8-unsplash.jpg',
-        '2=ferdinand-stohr-NFs6dRTBgaM-unsplash.jpg',
-        '3=evan-provan-V9A-_QKLElg-unsplash.jpg',
-        '4=steve-johnson-5Oe8KFH5998-unsplash.jpg'
-    ];
 
     let settings = {
         rendering: 'TRIANGLE_STRIP',

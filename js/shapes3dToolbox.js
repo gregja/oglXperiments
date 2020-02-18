@@ -16,14 +16,7 @@ var shapes3dToolbox = (function () {
     "use strict";
 
     // shortcuts to Math Functions
-    /*
-    const abs = Math.abs;
-    const sin = Math.sin;
-    const cos = Math.cos;
-    const tan = Math.tan;
-    const sqrt = Math.sqrt;
-    const PI = Math.PI;
-    */
+
     const {
         cos, sin, PI, tan, sqrt, abs, pow
     } = Math;
@@ -32,9 +25,26 @@ var shapes3dToolbox = (function () {
     const DEG_TO_RAD = PI / 180;
 
     const degToRad = angle => angle * DEG_TO_RAD;
-    const radToDeg = angle => angle * ( 180 / PI );
+    const radToDeg = angle => angle * (180 / PI);
 
     const getRandomInt = (max) => Math.floor(Math.random() * Math.floor(max));
+
+    const SINCOS_LENGTH = 720;       // every half degree
+    var sinLUT = [], cosLUT = [];
+    console.warn("Don't forget to launch the initLUT function before to use the sphereWeird function");
+
+    /**
+     * init sinLUT and cosLUT functions
+     * (launch this function before to use the sphereWeird function)
+     */
+    function initLUT() {
+        sinLUT =  new Float32Array(SINCOS_LENGTH);
+        cosLUT = new Float32Array(SINCOS_LENGTH);
+        for (let i = 0; i < SINCOS_LENGTH; i++) {
+            sinLUT[i] = sin(i * DEG_TO_RAD * 0.5);
+            cosLUT[i] = cos(i * DEG_TO_RAD * 0.5);
+        }
+    }
 
     /**
      * Cube generator
@@ -3005,6 +3015,169 @@ var shapes3dToolbox = (function () {
         return mesh;
     }
 
+    /**
+     * Weird Sphere Generator
+     * Algorithm found on the project ProcessinJS (cf. sphereDetail function)
+     * @param ures
+     * @param vres
+     * @returns {Array}
+     */
+    function sphereWeird(ures, vres, radius) {
+
+        if (arguments.length === 1) {
+            ures = vres = arguments[0];
+        }
+
+        //sphere stuff
+        let sphereDetailV = 0,
+            sphereDetailU = 0,
+            sphereX = [],
+            sphereY = [],
+            sphereZ = [];
+
+        /**
+         * The initSphere() function is a helper function used by <b>sphereDetail()</b>
+         * This function creates and stores sphere vertices every time the user changes sphere detail.
+         *
+         * @see #sphereDetail
+         */
+        let initSphere = function(sphereDetailU, sphereDetailV) {
+            let sphereVerts = [];
+
+            for (let i = 0; i < sphereDetailU; i++) {
+                sphereVerts.push(0);
+                sphereVerts.push(-1);
+                sphereVerts.push(0);
+                sphereVerts.push(sphereX[i]);
+                sphereVerts.push(sphereY[i]);
+                sphereVerts.push(sphereZ[i]);
+            }
+            sphereVerts.push(0);
+            sphereVerts.push(-1);
+            sphereVerts.push(0);
+            sphereVerts.push(sphereX[0]);
+            sphereVerts.push(sphereY[0]);
+            sphereVerts.push(sphereZ[0]);
+
+            let v1, v11, v2;
+
+            // middle rings
+            let voff = 0;
+            for (let i = 2; i < sphereDetailV; i++) {
+                v1 = v11 = voff;
+                voff += sphereDetailU;
+                v2 = voff;
+                for (let j = 0; j < sphereDetailU; j++) {
+                    sphereVerts.push(sphereX[v1]);
+                    sphereVerts.push(sphereY[v1]);
+                    sphereVerts.push(sphereZ[v1++]);
+                    sphereVerts.push(sphereX[v2]);
+                    sphereVerts.push(sphereY[v2]);
+                    sphereVerts.push(sphereZ[v2++]);
+                }
+
+                // close each ring
+                v1 = v11;
+                v2 = voff;
+
+                sphereVerts.push(sphereX[v1]);
+                sphereVerts.push(sphereY[v1]);
+                sphereVerts.push(sphereZ[v1]);
+                sphereVerts.push(sphereX[v2]);
+                sphereVerts.push(sphereY[v2]);
+                sphereVerts.push(sphereZ[v2]);
+            }
+
+            // add the northern cap
+            for (let i = 0; i < sphereDetailU; i++) {
+                v2 = voff + i;
+                sphereVerts.push(sphereX[v2]);
+                sphereVerts.push(sphereY[v2]);
+                sphereVerts.push(sphereZ[v2]);
+                sphereVerts.push(0);
+                sphereVerts.push(1);
+                sphereVerts.push(0);
+            }
+
+            sphereVerts.push(sphereX[voff]);
+            sphereVerts.push(sphereY[voff]);
+            sphereVerts.push(sphereZ[voff]);
+            sphereVerts.push(0);
+            sphereVerts.push(1);
+            sphereVerts.push(0);
+
+            return sphereVerts;
+        };
+
+        let sphereDetail = function(ures, vres) {
+
+            if (ures < 3) {
+                ures = 3;
+            } // force a minimum res
+            if (vres < 2) {
+                vres = 2;
+            } // force a minimum res
+
+            let delta = SINCOS_LENGTH / ures;
+            let cx = new Float32Array(ures);
+            let cz = new Float32Array(ures);
+            // calc unit circle in XZ plane
+            for (let i = 0; i < ures; i++) {
+                cx[i] = cosLUT[((i * delta) % SINCOS_LENGTH) | 0];
+                cz[i] = sinLUT[((i * delta) % SINCOS_LENGTH) | 0];
+            }
+
+            // computing vertexlist
+            // vertexlist starts at south pole
+            let vertCount = ures * (vres - 1) + 2;
+            let currVert = 0;
+
+            // re-init arrays to store vertices
+            sphereX = new Float32Array(vertCount);
+            sphereY = new Float32Array(vertCount);
+            sphereZ = new Float32Array(vertCount);
+
+            let angle_step = (SINCOS_LENGTH * 0.5) / vres;
+            let angle = angle_step;
+
+            // step along Y axis
+            for (let i = 1; i < vres; i++) {
+                let curradius = sinLUT[(angle % SINCOS_LENGTH) | 0];
+                let currY = -cosLUT[(angle % SINCOS_LENGTH) | 0];
+                for (let j = 0; j < ures; j++) {
+                    sphereX[currVert] = cx[j] * curradius;
+                    sphereY[currVert] = currY;
+                    sphereZ[currVert++] = cz[j] * curradius;
+                }
+                angle += angle_step;
+            }
+
+            return {ures, vres};
+        };
+
+        let res = sphereDetail(ures, vres);
+        let vertices = initSphere(res.ures, res.vres);  // make the sphere verts and norms
+
+        if (radius != 1) {
+            return vertices.map(item => item * radius);
+        }
+
+        return vertices;
+    }
+
+    function ribbon(maxTriangles=20, depth=50, angle=5) {
+        let vertices = [];
+        for ( let i = 0; i < maxTriangles; i++ ) {
+            let x1 = cos( degToRad( i * 10 ) ) * 100;
+            let y1 = sin( degToRad( i * 10 ) ) * 100;
+            let x2 = cos( degToRad( i * 10 + angle ) ) * ( 180 - i * 4 );
+            let y2 = sin( degToRad( i * 10 + angle ) ) * ( 180 - i * 4 );
+            vertices.push( x1, y1, 0 );
+            vertices.push( x2, y2, depth + i );
+        }
+        return vertices.map(item => item / 200);
+    }
+
     // public functions and constants (items not declared here are private)
     return {
         generateCube: generateCube,
@@ -3045,6 +3218,9 @@ var shapes3dToolbox = (function () {
         excavateShape: excavateShape,
         getShapeByName: getShapeByName,
         getRndItemFromList: getRndItemFromList,
-        getRandomInt: getRandomInt
+        getRandomInt: getRandomInt,
+        initLUT: initLUT,
+        sphereWeird: sphereWeird,
+        ribbon: ribbon
     };
 })();

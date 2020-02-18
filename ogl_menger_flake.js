@@ -1,5 +1,5 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Box, Mesh, Vec3, Orbit} from './js/ogl/ogl.js';
-
+import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} from "./js/ogl_constants.js";
 {
 
     let info = document.getElementById('info');
@@ -8,22 +8,11 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Box, Mesh, Vec3
     var generateShape = shapes3dToolbox.flakeGenerator;
     var list_levels = ['1', '2', '3', '4'];
 
-    let render_modes = ['LINES',  'LINE_STRIP', 'TRIANGLES', 'TRIANGLE_STRIP', 'TRIANGLE_FAN'];
-
     let tasks = [];
 
     let blocks_array = [];
     let block_current = -999;
     let block_maximum = -999;
-
-    // textures from : https://unsplash.com/collections/1417675/google-pixel-textures-collection
-    let textures = [
-        '0=None',
-        '1=bia-andrade-PO8Woh4YBD8-unsplash.jpg',
-        '2=ferdinand-stohr-NFs6dRTBgaM-unsplash.jpg',
-        '3=evan-provan-V9A-_QKLElg-unsplash.jpg',
-        '4=steve-johnson-5Oe8KFH5998-unsplash.jpg'
-    ];
 
     let settings = {
         rendering: 'TRIANGLES',

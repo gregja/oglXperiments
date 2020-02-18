@@ -4,7 +4,7 @@
 // about the extension's existence. So unfortunately we're
 // forced to create a 300 es GLSL shader for WebGL2, and a 100 es
 // GLSL shader for WebGL1. There are only slight syntax changes.
-const vertex100 = /* glsl */ `
+export const vertex100 = /* glsl */ `
             attribute vec3 position;
             uniform mat4 modelViewMatrix;
             uniform mat4 projectionMatrix;
@@ -15,7 +15,7 @@ const vertex100 = /* glsl */ `
             }
         `;
 
-const fragment100 = /* glsl */ `#extension GL_OES_standard_derivatives : enable
+export const fragment100 = /* glsl */ `#extension GL_OES_standard_derivatives : enable
             precision highp float;
             uniform sampler2D tMap;
             varying vec4 vMVPos;
@@ -39,7 +39,7 @@ const fragment100 = /* glsl */ `#extension GL_OES_standard_derivatives : enable
             }
         `;
 
-const vertex300 = /* glsl */ `#version 300 es
+export const vertex300 = /* glsl */ `#version 300 es
             in vec3 position;
             uniform mat4 modelViewMatrix;
             uniform mat4 projectionMatrix;
@@ -50,7 +50,7 @@ const vertex300 = /* glsl */ `#version 300 es
             }
         `;
 
-const fragment300 = /* glsl */ `#version 300 es
+export const fragment300 = /* glsl */ `#version 300 es
             precision highp float;
             uniform sampler2D tMap;
             in vec4 vMVPos;
@@ -74,3 +74,31 @@ const fragment300 = /* glsl */ `#version 300 es
                 FragColor.a = 1.0;
             }
         `;
+
+export const render_modes = ['LINES',  'LINE_STRIP', 'TRIANGLES', 'TRIANGLE_STRIP', 'TRIANGLE_FAN'];
+
+// textures from : https://unsplash.com/collections/1417675/google-pixel-textures-collection
+//      <a href="https://unsplash.com/collections/1417675/google-pixel-textures-collection" target="_blank">Free textures from Unsplash</a>
+/*
+let textures = [
+    '0=None',
+    '1=bia-andrade-PO8Woh4YBD8-unsplash.jpg',
+    '2=ferdinand-stohr-NFs6dRTBgaM-unsplash.jpg',
+    '3=evan-provan-V9A-_QKLElg-unsplash.jpg',
+    '4=steve-johnson-5Oe8KFH5998-unsplash.jpg'
+];
+*/
+
+// Textures from : https://codepen.io/Dillo/pen/xxGwdpE
+export const textures = [
+        '0=None',
+        '1=texture01.png',
+        '2=texture02.png',
+        '3=texture03.png',
+        '4=texture04.png',
+        '5=texture05.png',
+        '6=texture06.png',
+        '7=texture07.png',
+        '8=texture08.png',
+        '9=texture09.png',
+];
