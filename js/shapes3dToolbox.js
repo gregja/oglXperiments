@@ -3165,13 +3165,23 @@ var shapes3dToolbox = (function () {
         return vertices;
     }
 
-    function ribbon(maxTriangles=20, depth=50, angle=5) {
+    /**
+     * Ribbon generator
+     * @param config
+     * @returns {number[]}
+     */
+    function ribbon(config) {
+        var maxTriangles = config.maxTriangles || 20;
+        var depth = config.depth || 50;
+        var tiltAngle = config.tiltAngle || 5;
+        var deviationX = config.deviationX ||180;
+        var deviationY = config.deviationY ||180;
         let vertices = [];
         for ( let i = 0; i < maxTriangles; i++ ) {
             let x1 = cos( degToRad( i * 10 ) ) * 100;
             let y1 = sin( degToRad( i * 10 ) ) * 100;
-            let x2 = cos( degToRad( i * 10 + angle ) ) * ( 180 - i * 4 );
-            let y2 = sin( degToRad( i * 10 + angle ) ) * ( 180 - i * 4 );
+            let x2 = cos( degToRad( i * 10 + tiltAngle ) ) * ( deviationX - i * 4 );
+            let y2 = sin( degToRad( i * 10 + tiltAngle ) ) * ( deviationY - i * 4 );
             vertices.push( x1, y1, 0 );
             vertices.push( x2, y2, depth + i );
         }

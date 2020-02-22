@@ -7,7 +7,6 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     let info = document.getElementById('info');
     info.innerHTML = "3D object : Weird sphere" ;
 
-    let divider = 500;  // divider to adapt shapes to the WebGL space coordinates
     let geometry, mesh; // global variables to access in different contexts
 
     // examples for ures & vres : (4, 20) or (30, 30) or (6, 6)
@@ -17,11 +16,13 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
         isSpinning: false,
         maxTriangles: 20,
         depth: 50,
-        tiltAngle: 5
+        tiltAngle: 5,
+        deviationX: 180,
+        deviationY: 180
     };
 
     function shapeGenerator() {
-        let xportMesh = shapes3dToolbox.ribbon(settings.maxTriangles, settings.depth, settings.tiltAngle);
+        let xportMesh = shapes3dToolbox.ribbon(settings);
 
         geometry = new Geometry(gl, {
             position: {size: 3, data: new Float32Array(xportMesh)}
@@ -133,6 +134,17 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
             shapeGenerator();
         });
 
+        let guiDeviationX = gui.add(obj, 'deviationX').min(0).max(360).step(10).listen();
+        guiDeviationX.onChange(function(value){
+            obj.deviationX = Number(value);
+            shapeGenerator();
+        });
+
+        let guiDeviationY = gui.add(obj, 'deviationY').min(0).max(360).step(10).listen();
+        guiDeviationY.onChange(function(value){
+            obj.deviationY = Number(value);
+            shapeGenerator();
+        });
 
         let guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();  // none by default
         guiRndrMode.onChange(function(value){
