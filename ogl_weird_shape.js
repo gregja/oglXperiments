@@ -1,35 +1,70 @@
-import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from './js/ogl/ogl.js';
+import {Renderer, Camera, Transform, Texture, Program, Box, Sphere, Mesh, Vec3, Orbit} from './js/ogl/ogl.js';
 import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} from "./js/ogl_constants.js";
 {
-    const DEG_TO_RAD = Math.PI / 180;
-    const degToRad = angle => angle * DEG_TO_RAD;
-
     let info = document.getElementById('info');
-    info.innerHTML = "3D object : Weird sphere" ;
+    info.innerHTML = "3D object : Weird shape" ;
 
-    let geometry, mesh; // global variables to access in different contexts
+    let scene, texture;
+    let shapes = [];
 
-    // examples for ures & vres : (4, 20) or (30, 30) or (6, 6)
     let settings = {
         rendering: 'TRIANGLE_STRIP',
         texture: textures[0],
-        isSpinning: false,
-        maxTriangles: 20,
-        depth: 50,
-        tiltAngle: 5,
-        deviationX: 180,
-        deviationY: 180
+        isSpinning: false
     };
 
     function shapeGenerator() {
-        let xportMesh = shapes3dToolbox.ribbon(settings);
+        shapes = [];
 
-        geometry = new Geometry(gl, {
-            position: {size: 3, data: new Float32Array(xportMesh)}
+        var skeleton = {
+            position: [0, -3, 0],
+            scale: [2, 5, 2],
+            rotation: [0, 0, 0],
+            children: [
+                {
+                    id: "leftwing",
+                    position: [0, -1.5, -1],
+                    scale: [1, 5, 1],
+                    rotation: [0, 90, 0],
+                    geometry: 'boxGeometry',
+                },
+                {
+                    id: "rightwing",
+                    position: [0, -1.5, -1],
+                    scale: [1, 5, 1],
+                    rotation: [0, -90, 0],
+                    geometry: 'boxGeometry',
+                },
+
+                {
+                    id: "shpere",
+                    position: [0, -.5, -1],
+                    scale: [1, 1, 1],
+                    rotation: [0, 0, 0],
+                    radius: 1.5,
+                    geometry: 'sphereGeometry',
+                }
+            ]
+        };
+
+        const geometry = new Box(gl, {width: skeleton.scale[0], height: skeleton.scale[1], depth: skeleton.scale[2]});
+        const shape =  new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
+        shape.position.set(skeleton.position[0], skeleton.position[1], skeleton.position[2]);
+        shape.setParent(scene);
+        shapes.push(shape);
+
+        skeleton.children.forEach(config => {
+            let geometry;
+            if (config.geometry == 'boxGeometry') {
+                geometry = new Box(gl, {width: config.scale[0], height: config.scale[1], depth: config.scale[2]});
+            } else {
+                geometry = new Sphere(gl, {radius: config.radius});
+            }
+            const shape =  new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
+            shape.position.set(config.position[0], config.position[1], config.position[2]);
+            shape.rotation.set(config.rotation[0], config.rotation[1], config.rotation[2]);
+            shape.setParent(shapes[0]);
         });
-        scene = new Transform();
-        mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
-        mesh.setParent(scene);
     }
 
     function extract_code(value) {
@@ -48,25 +83,23 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     gl.clearColor(1, 1, 1, 1);
 
     let camera = new Camera(gl);
-    camera.position.set(2, 1, 0);
+    camera.position.set(0, -24, -1);
 
     let controls = new Orbit(camera, {
         target: new Vec3(0, 0.2, 0),
     });
 
     function resize() {
-        let width = window.innerWidth*.8;
-        let height = window.innerHeight;
-        renderer.setSize(width, height);
-        camera.perspective({aspect: width / height});
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.perspective({aspect: gl.canvas.width / gl.canvas.height});
     }
     window.addEventListener('resize', resize, false);
     resize();
 
-    let scene = new Transform();
-    let texture = new Texture(gl);
+    scene = new Transform();
+    texture = new Texture(gl);
 
-    if (settings.texture != null) {
+    if (extract_code(settings.texture) != 0) {
         const img = new Image();
         img.onload = () => texture.image = img;
         img.src = 'assets/' + extract_value(settings.texture);
@@ -95,8 +128,9 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
         controls.update();
 
         if (settings.isSpinning) {
-            mesh.rotation.y -= 0.01;
-            mesh.rotation.x += 0.01;
+            shapes[0].rotation.y -= 0.01;
+            shapes[0].rotation.x += 0.01;
+            shapes[0].rotation.z += 0.01;
         }
 
         renderer.render({scene, camera});
@@ -118,39 +152,10 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     function addGui(obj) {
         let gui = new dat.gui.GUI();
 
-        let guimaxTriangles = gui.add(obj, 'maxTriangles').min(1).max(200).step(1).listen();
-        guimaxTriangles.onChange(function(value){
-            obj.maxTriangles = Number(value);
-            shapeGenerator();
-        });
-
-        let guiDepth = gui.add(obj, 'depth').min(1).max(200).step(1).listen();
-        guiDepth.onChange(function(value){
-            obj.depth = Number(value);
-            shapeGenerator();
-        });
-
-        let guiTiltAngle = gui.add(obj, 'tiltAngle').min(1).max(90).step(1).listen();
-        guiTiltAngle.onChange(function(value){
-            obj.tiltAngle = Number(value);
-            shapeGenerator();
-        });
-
-        let guiDeviationX = gui.add(obj, 'deviationX').min(1).max(360).step(1).listen();
-        guiDeviationX.onChange(function(value){
-            obj.deviationX = Number(value);
-            shapeGenerator();
-        });
-
-        let guiDeviationY = gui.add(obj, 'deviationY').min(1).max(360).step(1).listen();
-        guiDeviationY.onChange(function(value){
-            obj.deviationY = Number(value);
-            shapeGenerator();
-        });
-
         let guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();  // none by default
         guiRndrMode.onChange(function(value){
             obj.rendering = value;
+            scene = new Transform();
             shapeGenerator();
         });
 

@@ -29,7 +29,8 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     gl.clearColor(1, 1, 1, 1);
 
     let camera = new Camera(gl);
-    camera.position.set(2, 1, 0);
+    //camera.position.set(2, 1, 0);
+    camera.position.set(0, -3, -1);
 
     let controls = new Orbit(camera, {
         target: new Vec3(0, 0.2, 0),
