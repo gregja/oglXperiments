@@ -8,7 +8,7 @@ During the 2019 year, I made a lot of experiments around 3D modelization, with P
 
 To well begin the 2020 year, I decided to adapt some of my 3D experiments to WebGL. 
 
-For my first experiments with WebGL, I chose to work with OGL.js, a lightweight JS and powerful project.
+For my first experiments with WebGL, I chose to work with OGL.js, a lightweight and powerful JS project.
 
 https://github.com/oframe/ogl
 
