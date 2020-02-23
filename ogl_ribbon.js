@@ -5,7 +5,7 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     const degToRad = angle => angle * DEG_TO_RAD;
 
     let info = document.getElementById('info');
-    info.innerHTML = "3D object : Weird sphere" ;
+    info.innerHTML = "3D object : Ribbon" ;
 
     let geometry, mesh; // global variables to access in different contexts
 
