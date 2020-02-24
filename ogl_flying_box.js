@@ -120,17 +120,19 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
         })
 
         skeleton.children.forEach((level1, idx) => {
-            let geometry;
+            let geometry, childLvl1;
             if (jointParams.type == 'box') {
                 geometry = new Box(gl, {width: jointParams.scale[0], height: jointParams.scale[1], depth: jointParams.scale[2]});
+                childLvl1 =  new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
             } else {
                 if (jointParams.type == 'sphere') {
                     geometry = new Sphere(gl, {radius: jointParams.radius});
+                    childLvl1 =  new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
                 } else {
-                    geometry = new Transform(gl);
+                    childLvl1 = new Transform(gl);
                 }
             }
-            let childLvl1 =  new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
+            //let childLvl1 =  new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
             childLvl1.position.set(level1.position[0], level1.position[1], level1.position[2]);
             childLvl1.rotation.set(level1.rotation[0], level1.rotation[1], level1.rotation[2]);
             book.addChild(childLvl1);
