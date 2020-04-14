@@ -1,21 +1,25 @@
-import {RenderTarget} from '../core/RenderTarget.js';
-import {Program} from '../core/Program.js';
-import {Mesh} from '../core/Mesh.js';
-import {Vec2} from '../math/Vec2.js';
-import {Triangle} from './Triangle.js';
+import { RenderTarget } from '../core/RenderTarget.js';
+import { Program } from '../core/Program.js';
+import { Mesh } from '../core/Mesh.js';
+import { Vec2 } from '../math/Vec2.js';
+import { Triangle } from './Triangle.js';
 
 export class Flowmap {
-    constructor(gl, {
-        size = 128, // default size of the render targets
-        falloff = 0.3, // size of the stamp, percentage of the size
-        alpha = 1, // opacity of the stamp
-        dissipation = 0.98, // affects the speed that the stamp fades. Closer to 1 is slower
-    } = {}) {
+    constructor(
+        gl,
+        {
+            size = 128, // default size of the render targets
+            falloff = 0.3, // size of the stamp, percentage of the size
+            alpha = 1, // opacity of the stamp
+            dissipation = 0.98, // affects the speed that the stamp fades. Closer to 1 is slower
+            type, // Pass in gl.FLOAT to force it, defaults to gl.HALF_FLOAT
+        } = {}
+    ) {
         const _this = this;
         this.gl = gl;
 
         // output uniform containing render target textures
-        this.uniform = {value: null};
+        this.uniform = { value: null };
 
         this.mask = {
             read: null,
@@ -28,7 +32,7 @@ export class Flowmap {
                 _this.mask.write = temp;
                 _this.uniform.value = _this.mask.read.texture;
             },
-        }
+        };
 
         {
             createFBOs();
@@ -41,17 +45,22 @@ export class Flowmap {
         }
 
         function createFBOs() {
-            let supportLinearFiltering = gl.renderer.extensions[`OES_texture_${gl.renderer.isWebgl2 ? `` : `half_`}float_linear`];
+            // Requested type not supported, fall back to half float
+            if (!type) type = gl.HALF_FLOAT || gl.renderer.extensions['OES_texture_half_float'].HALF_FLOAT_OES;
+
+            let minFilter = (() => {
+                if (gl.renderer.isWebgl2) return gl.LINEAR;
+                if (gl.renderer.extensions[`OES_texture_${type === gl.FLOAT ? '' : 'half_'}float_linear`]) return gl.LINEAR;
+                return gl.NEAREST;
+            })();
 
             const options = {
-                width: size, 
-                height: size, 
-                type: gl.renderer.isWebgl2 ? gl.HALF_FLOAT : 
-                    gl.renderer.extensions['OES_texture_half_float'] ? gl.renderer.extensions['OES_texture_half_float'].HALF_FLOAT_OES : 
-                    gl.UNSIGNED_BYTE,
+                width: size,
+                height: size,
+                type,
                 format: gl.RGBA,
-                internalFormat: gl.renderer.isWebgl2 ? gl.RGBA16F : gl.RGBA,
-                minFilter: supportLinearFiltering ? gl.LINEAR : gl.NEAREST,
+                internalFormat: gl.renderer.isWebgl2 ? (type === gl.FLOAT ? gl.RGBA32F : gl.RGBA16F) : gl.RGBA,
+                minFilter,
                 depth: false,
             };
 
@@ -62,7 +71,6 @@ export class Flowmap {
 
         function initProgram() {
             return new Mesh(gl, {
-
                 // Triangle that includes -1 to 1 range for 'position', and 0 to 1 range for 'uv'.
                 geometry: new Triangle(gl),
 
@@ -72,14 +80,14 @@ export class Flowmap {
                     uniforms: {
                         tMap: _this.uniform,
 
-                        uFalloff: {value: falloff * 0.5},
-                        uAlpha: {value: alpha},
-                        uDissipation: {value: dissipation},
+                        uFalloff: { value: falloff * 0.5 },
+                        uAlpha: { value: alpha },
+                        uDissipation: { value: dissipation },
 
                         // User needs to update these
-                        uAspect: {value: 1},
-                        uMouse: {value: _this.mouse},
-                        uVelocity: {value: _this.velocity},
+                        uAspect: { value: 1 },
+                        uMouse: { value: _this.mouse },
+                        uVelocity: { value: _this.velocity },
                     },
                     depthTest: false,
                 }),

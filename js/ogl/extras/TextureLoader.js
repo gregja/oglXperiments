@@ -1,53 +1,49 @@
 import { Texture } from '../core/Texture.js';
 import { KTXTexture } from './KTXTexture.js';
 
-// TODO: store cache with arguments
-
 // For compressed textures, generate using https://github.com/TimvanScherpenzeel/texture-compressor
 
-const cache = {};
+let cache = {};
 const supportedExtensions = [];
 
 export class TextureLoader {
-    static load(gl, {
-        src, // string or object of extension:src key-values
-        // {
-        //     pvrtc: '...ktx',
-        //     s3tc: '...ktx',
-        //     etc: '...ktx',
-        //     etc1: '...ktx',
-        //     astc: '...ktx',
-        //     webp: '...webp',
-        //     jpg: '...jpg',
-        //     png: '...png',
-        // }
+    static load(
+        gl,
+        {
+            src, // string or object of extension:src key-values
+            // {
+            //     pvrtc: '...ktx',
+            //     s3tc: '...ktx',
+            //     etc: '...ktx',
+            //     etc1: '...ktx',
+            //     astc: '...ktx',
+            //     webp: '...webp',
+            //     jpg: '...jpg',
+            //     png: '...png',
+            // }
 
-        // Only props relevant to KTXTexture
-        wrapS = gl.CLAMP_TO_EDGE,
-        wrapT = gl.CLAMP_TO_EDGE,
-        anisotropy = 0,
+            // Only props relevant to KTXTexture
+            wrapS = gl.CLAMP_TO_EDGE,
+            wrapT = gl.CLAMP_TO_EDGE,
+            anisotropy = 0,
 
-        // For regular images
-        format = gl.RGBA,
-        internalFormat = format,
-        generateMipmaps = true,
-        minFilter = generateMipmaps ? gl.NEAREST_MIPMAP_LINEAR : gl.LINEAR,
-        magFilter = gl.LINEAR,
-        premultiplyAlpha = false,
-        unpackAlignment = 4,
-        flipY = true,
-    } = {}) {
+            // For regular images
+            format = gl.RGBA,
+            internalFormat = format,
+            generateMipmaps = true,
+            minFilter = generateMipmaps ? gl.NEAREST_MIPMAP_LINEAR : gl.LINEAR,
+            magFilter = gl.LINEAR,
+            premultiplyAlpha = false,
+            unpackAlignment = 4,
+            flipY = true,
+        } = {}
+    ) {
         const support = this.getSupportedExtensions(gl);
-
         let ext = 'none';
 
         // If src is string, determine which format from the extension
         if (typeof src === 'string') {
-            ext = src
-                .split('.')
-                .pop()
-                .split('?')[0]
-                .toLowerCase();
+            ext = src.split('.').pop().split('?')[0].toLowerCase();
         }
 
         // If src is object, use supported extensions and provided list to choose best option
@@ -62,6 +58,25 @@ export class TextureLoader {
             }
         }
 
+        // Stringify props
+        const cacheID =
+            src +
+            wrapS +
+            wrapT +
+            anisotropy +
+            format +
+            internalFormat +
+            generateMipmaps +
+            minFilter +
+            magFilter +
+            premultiplyAlpha +
+            unpackAlignment +
+            flipY +
+            gl.renderer.id;
+
+        // Check cache for existing texture
+        if (cache[cacheID]) return cache[cacheID];
+
         let texture;
         switch (ext) {
             case 'ktx':
@@ -70,7 +85,6 @@ export class TextureLoader {
             case 'etc':
             case 'etc1':
             case 'astc':
-                
                 // Load compressed texture using KTX format
                 texture = new KTXTexture(gl, {
                     src,
@@ -97,16 +111,15 @@ export class TextureLoader {
                     unpackAlignment,
                     flipY,
                 });
-                texture = loaded = this.loadImage(gl, src, texture);
+                texture.loaded = this.loadImage(gl, src, texture);
                 break;
             default:
                 console.warn('No supported format supplied');
                 texture = new Texture(gl);
         }
 
-        texture.format = ext;
-
-        // TODO: store in cache
+        texture.ext = ext;
+        cache[cacheID] = texture;
         return texture;
     }
 
@@ -114,8 +127,11 @@ export class TextureLoader {
         if (supportedExtensions.length) return supportedExtensions;
 
         const extensions = {
-            pvrtc: gl.renderer.getExtension('WEBGL_compressed_texture_pvrtc'),
-            s3tc: gl.renderer.getExtension('WEBGL_compressed_texture_s3tc'),
+            pvrtc: gl.renderer.getExtension('WEBGL_compressed_texture_pvrtc') || gl.renderer.getExtension('WEBKIT_WEBGL_compressed_texture_pvrtc'),
+            s3tc:
+                gl.renderer.getExtension('WEBGL_compressed_texture_s3tc') ||
+                gl.renderer.getExtension('MOZ_WEBGL_compressed_texture_s3tc') ||
+                gl.renderer.getExtension('WEBKIT_WEBGL_compressed_texture_s3tc'),
             etc: gl.renderer.getExtension('WEBGL_compressed_texture_etc'),
             etc1: gl.renderer.getExtension('WEBGL_compressed_texture_etc1'),
             astc: gl.renderer.getExtension('WEBGL_compressed_texture_astc'),
@@ -134,12 +150,12 @@ export class TextureLoader {
 
     static loadKTX(src, texture) {
         return fetch(src)
-            .then(res => res.arrayBuffer())
-            .then(buffer => texture.parseBuffer(buffer));
+            .then((res) => res.arrayBuffer())
+            .then((buffer) => texture.parseBuffer(buffer));
     }
 
     static loadImage(gl, src, texture) {
-        return decodeImage(src).then(imgBmp => {
+        return decodeImage(src).then((imgBmp) => {
             // Catch non POT textures and update params to avoid errors
             if (!powerOfTwo(imgBmp.width) || !powerOfTwo(imgBmp.height)) {
                 if (texture.generateMipmaps) texture.generateMipmaps = false;
@@ -156,15 +172,14 @@ export class TextureLoader {
             };
         });
     }
+
+    static clearCache() {
+        cache = {};
+    }
 }
 
 function detectWebP() {
-    return (
-        document
-            .createElement('canvas')
-            .toDataURL('image/webp')
-            .indexOf('data:image/webp') == 0
-    );
+    return document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') == 0;
 }
 
 function powerOfTwo(value) {
@@ -172,7 +187,7 @@ function powerOfTwo(value) {
 }
 
 function decodeImage(src) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
         const img = new Image();
         img.src = src;
 
@@ -183,7 +198,7 @@ function decodeImage(src) {
                 createImageBitmap(img, {
                     imageOrientation: 'flipY',
                     premultiplyAlpha: 'none',
-                }).then(imgBmp => {
+                }).then((imgBmp) => {
                     resolve(imgBmp);
                 });
             };

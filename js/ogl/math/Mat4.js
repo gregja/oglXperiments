@@ -2,45 +2,57 @@ import * as Mat4Func from './functions/Mat4Func.js';
 
 export class Mat4 extends Array {
     constructor(
-        m00 = 1, m01 = 0, m02 = 0, m03 = 0, 
-        m10 = 0, m11 = 1, m12 = 0, m13 = 0, 
-        m20 = 0, m21 = 0, m22 = 1, m23 = 0, 
-        m30 = 0, m31 = 0, m32 = 0, m33 = 1
+        m00 = 1,
+        m01 = 0,
+        m02 = 0,
+        m03 = 0,
+        m10 = 0,
+        m11 = 1,
+        m12 = 0,
+        m13 = 0,
+        m20 = 0,
+        m21 = 0,
+        m22 = 1,
+        m23 = 0,
+        m30 = 0,
+        m31 = 0,
+        m32 = 0,
+        m33 = 1
     ) {
         super(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33);
         return this;
-    }
-
-    set x(v) {
-        this[12] = v;
     }
 
     get x() {
         return this[12];
     }
 
-    set y(v) {
-        this[13] = v;
-    }
-
     get y() {
         return this[13];
-    }
-
-    set z(v) {
-        this[14] = v;
     }
 
     get z() {
         return this[14];
     }
 
-    set w(v) {
-        this[15] = v;
-    }
-
     get w() {
         return this[15];
+    }
+
+    set x(v) {
+        this[12] = v;
+    }
+
+    set y(v) {
+        this[13] = v;
+    }
+
+    set z(v) {
+        this[14] = v;
+    }
+
+    set w(v) {
+        this[15] = v;
     }
 
     set(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33) {
@@ -54,23 +66,13 @@ export class Mat4 extends Array {
         return this;
     }
 
-    rotateX(v, m = this) {
-        Mat4Func.rotateX(this, m, v);
-        return this;
-    }
-
-    rotateY(v, m = this) {
-        Mat4Func.rotateY(this, m, v);
-        return this;
-    }
-
-    rotateZ(v, m = this) {
-        Mat4Func.rotateZ(this, m, v);
+    rotate(v, axis, m = this) {
+        Mat4Func.rotate(this, m, v, axis);
         return this;
     }
 
     scale(v, m = this) {
-        Mat4Func.scale(this, m, typeof v === "number" ? [v, v, v] : v);
+        Mat4Func.scale(this, m, typeof v === 'number' ? [v, v, v] : v);
         return this;
     }
 
@@ -93,12 +95,12 @@ export class Mat4 extends Array {
         return this;
     }
 
-    fromPerspective({fov, aspect, near, far} = {}) {
+    fromPerspective({ fov, aspect, near, far } = {}) {
         Mat4Func.perspective(this, fov, aspect, near, far);
         return this;
     }
 
-    fromOrthogonal({left, right, bottom, top, near, far}) {
+    fromOrthogonal({ left, right, bottom, top, near, far }) {
         Mat4Func.ortho(this, left, right, bottom, top, near, far);
         return this;
     }

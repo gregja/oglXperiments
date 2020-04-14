@@ -10,12 +10,12 @@ export class Vec2 extends Array {
         return this[0];
     }
 
-    set x(v) {
-        this[0] = v;
-    }
-
     get y() {
         return this[1];
+    }
+
+    set x(v) {
+        this[0] = v;
     }
 
     set y(v) {
@@ -87,7 +87,8 @@ export class Vec2 extends Array {
     }
 
     cross(va, vb) {
-        return Vec2Func.cross(va, vb);
+        if (vb) return Vec2Func.cross(va, vb);
+        return Vec2Func.cross(this, va);
     }
 
     scale(v) {
@@ -127,14 +128,14 @@ export class Vec2 extends Array {
     }
 
     fromArray(a, o = 0) {
-		this[0] = a[o];
-		this[1] = a[o + 1];
-		return this;
+        this[0] = a[o];
+        this[1] = a[o + 1];
+        return this;
     }
-    
-	toArray(a = [], o = 0) {
-		a[o] = this[0];
-		a[o + 1] = this[1];
-		return a;
-	}
+
+    toArray(a = [], o = 0) {
+        a[o] = this[0];
+        a[o + 1] = this[1];
+        return a;
+    }
 }

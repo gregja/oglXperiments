@@ -10,28 +10,28 @@ export class Vec4 extends Array {
         return this[0];
     }
 
-    set x(v) {
-        this[0] = v;
-    }
-
     get y() {
         return this[1];
-    }
-
-    set y(v) {
-        this[1] = v;
     }
 
     get z() {
         return this[2];
     }
 
-    set z(v) {
-        this[2] = v;
-    }
-
     get w() {
         return this[3];
+    }
+
+    set x(v) {
+        this[0] = v;
+    }
+
+    set y(v) {
+        this[1] = v;
+    }
+
+    set z(v) {
+        this[2] = v;
     }
 
     set w(v) {
@@ -55,18 +55,18 @@ export class Vec4 extends Array {
     }
 
     fromArray(a, o = 0) {
-		this[0] = a[o];
-		this[1] = a[o + 1];
-		this[2] = a[o + 2];
-		this[3] = a[o + 3];
-		return this;
+        this[0] = a[o];
+        this[1] = a[o + 1];
+        this[2] = a[o + 2];
+        this[3] = a[o + 3];
+        return this;
     }
-    
-	toArray(a = [], o = 0) {
-		a[o] = this[0];
-		a[o + 1] = this[1];
-		a[o + 2] = this[2];
-		a[o + 3] = this[3];
-		return a;
-	}
+
+    toArray(a = [], o = 0) {
+        a[o] = this[0];
+        a[o + 1] = this[1];
+        a[o + 2] = this[2];
+        a[o + 3] = this[3];
+        return a;
+    }
 }

@@ -1,8 +1,7 @@
-// TODO: test orthographic
 // TODO: add barycentric ?
 
-import {Vec3} from '../math/Vec3.js';
-import {Mat4} from '../math/Mat4.js';
+import { Vec3 } from '../math/Vec3.js';
+import { Mat4 } from '../math/Mat4.js';
 
 const tempVec3a = new Vec3();
 const tempVec3b = new Vec3();
@@ -19,14 +18,29 @@ export class Raycast {
 
     // Set ray from mouse unprojection
     castMouse(camera, mouse = [0, 0]) {
+        if (camera.type === 'orthographic') {
+            // Set origin
+            // Since camera is orthographic, origin is not the camera position
+            const { left, right, bottom, top, zoom } = camera;
+            const x = left / zoom + ((right - left) / zoom) * (mouse[0] * 0.5 + 0.5);
+            const y = bottom / zoom + ((top - bottom) / zoom) * (mouse[1] * 0.5 + 0.5);
+            this.origin.set(x, y, 0);
+            this.origin.applyMatrix4(camera.worldMatrix);
 
-        // Set origin
-        camera.worldMatrix.getTranslation(this.origin);
-        
-        // Set direction
-        this.direction.set(mouse[0], mouse[1], 0.5);
-        camera.unproject(this.direction);
-        this.direction.sub(this.origin).normalize();
+            // Set direction
+            // https://community.khronos.org/t/get-direction-from-transformation-matrix-or-quat/65502/2
+            this.direction.x = -camera.worldMatrix[8];
+            this.direction.y = -camera.worldMatrix[9];
+            this.direction.z = -camera.worldMatrix[10];
+        } else {
+            // Set origin
+            camera.worldMatrix.getTranslation(this.origin);
+
+            // Set direction
+            this.direction.set(mouse[0], mouse[1], 0.5);
+            camera.unproject(this.direction);
+            this.direction.sub(this.origin).normalize();
+        }
     }
 
     intersectBounds(meshes) {
@@ -38,8 +52,7 @@ export class Raycast {
 
         const hits = [];
 
-        meshes.forEach(mesh => {
-
+        meshes.forEach((mesh) => {
             // Create bounds
             if (!mesh.geometry.bounds) mesh.geometry.computeBoundingBox();
             if (mesh.geometry.raycast === 'sphere' && mesh.geometry.bounds.radius === Infinity) mesh.geometry.computeBoundingSphere();
@@ -49,19 +62,20 @@ export class Raycast {
             origin.copy(this.origin).applyMatrix4(invWorldMat4);
             direction.copy(this.direction).transformDirection(invWorldMat4);
 
-            let distance = 0;
-            if (mesh.geometry.raycast === 'sphere') { 
-                distance = this.intersectSphere(mesh.geometry.bounds, origin, direction);
+            let localDistance = 0;
+            if (mesh.geometry.raycast === 'sphere') {
+                localDistance = this.intersectSphere(mesh.geometry.bounds, origin, direction);
             } else {
-                distance = this.intersectBox(mesh.geometry.bounds, origin, direction);
+                localDistance = this.intersectBox(mesh.geometry.bounds, origin, direction);
             }
-            if (!distance) return;
+            if (!localDistance) return;
 
             // Create object on mesh to avoid generating lots of objects
-            if (!mesh.hit) mesh.hit = {localPoint: new Vec3()};
+            if (!mesh.hit) mesh.hit = { localPoint: new Vec3(), point: new Vec3() };
 
-            mesh.hit.distance = distance;
-            mesh.hit.localPoint.copy(direction).multiply(distance).add(origin);
+            mesh.hit.localPoint.copy(direction).multiply(localDistance).add(origin);
+            mesh.hit.point.copy(mesh.hit.localPoint).applyMatrix4(mesh.worldMatrix);
+            mesh.hit.distance = mesh.hit.point.distance(this.origin);
 
             hits.push(mesh);
         });
@@ -93,11 +107,11 @@ export class Raycast {
     // Ray AABB - Ray Axis aligned bounding box testing
     intersectBox(box, origin = this.origin, direction = this.direction) {
         let tmin, tmax, tYmin, tYmax, tZmin, tZmax;
-    
+
         const invdirx = 1 / direction.x;
         const invdiry = 1 / direction.y;
         const invdirz = 1 / direction.z;
-    
+
         const min = box.min;
         const max = box.max;
 
@@ -106,24 +120,21 @@ export class Raycast {
 
         tYmin = ((invdiry >= 0 ? min.y : max.y) - origin.y) * invdiry;
         tYmax = ((invdiry >= 0 ? max.y : min.y) - origin.y) * invdiry;
-    
-        if ((tmin > tYmax) || (tYmin > tmax)) return 0;
-    
+
+        if (tmin > tYmax || tYmin > tmax) return 0;
+
         if (tYmin > tmin) tmin = tYmin;
         if (tYmax < tmax) tmax = tYmax;
-    
+
         tZmin = ((invdirz >= 0 ? min.z : max.z) - origin.z) * invdirz;
         tZmax = ((invdirz >= 0 ? max.z : min.z) - origin.z) * invdirz;
-    
-        if ((tmin > tZmax) || (tZmin > tmax)) return 0;
+
+        if (tmin > tZmax || tZmin > tmax) return 0;
         if (tZmin > tmin) tmin = tZmin;
         if (tZmax < tmax) tmax = tZmax;
-    
+
         if (tmax < 0) return 0;
 
         return tmin >= 0 ? tmin : tmax;
     }
 }
-
-
-

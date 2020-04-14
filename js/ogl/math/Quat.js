@@ -11,13 +11,21 @@ export class Quat extends Array {
         return this[0];
     }
 
+    get y() {
+        return this[1];
+    }
+
+    get z() {
+        return this[2];
+    }
+
+    get w() {
+        return this[3];
+    }
+
     set x(v) {
         this[0] = v;
         this.onChange();
-    }
-
-    get y() {
-        return this[1];
     }
 
     set y(v) {
@@ -25,17 +33,9 @@ export class Quat extends Array {
         this.onChange();
     }
 
-    get z() {
-        return this[2];
-    }
-
     set z(v) {
         this[2] = v;
         this.onChange();
-    }
-
-    get w() {
-        return this[3];
     }
 
     set w(v) {
@@ -134,18 +134,18 @@ export class Quat extends Array {
     }
 
     fromArray(a, o = 0) {
-		this[0] = a[o];
-		this[1] = a[o + 1];
-		this[2] = a[o + 2];
-		this[3] = a[o + 3];
-		return this;
+        this[0] = a[o];
+        this[1] = a[o + 1];
+        this[2] = a[o + 2];
+        this[3] = a[o + 3];
+        return this;
     }
-    
-	toArray(a = [], o = 0) {
-		a[o] = this[0];
-		a[o + 1] = this[1];
-		a[o + 2] = this[2];
-		a[o + 3] = this[3];
-		return a;
-	}
+
+    toArray(a = [], o = 0) {
+        a[o] = this[0];
+        a[o + 1] = this[1];
+        a[o + 2] = this[2];
+        a[o + 3] = this[3];
+        return a;
+    }
 }

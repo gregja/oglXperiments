@@ -1,5 +1,5 @@
 import * as EulerFunc from './functions/EulerFunc.js';
-import {Mat4} from './Mat4.js';
+import { Mat4 } from './Mat4.js';
 
 const tmpMat4 = new Mat4();
 
@@ -15,22 +15,22 @@ export class Euler extends Array {
         return this[0];
     }
 
+    get y() {
+        return this[1];
+    }
+
+    get z() {
+        return this[2];
+    }
+
     set x(v) {
         this[0] = v;
         this.onChange();
     }
 
-    get y() {
-        return this[1];
-    }
-
     set y(v) {
         this[1] = v;
         this.onChange();
-    }
-
-    get z() {
-        return this[2];
     }
 
     set z(v) {
