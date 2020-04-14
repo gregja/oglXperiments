@@ -5,15 +5,15 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     let info = document.getElementById('info');
 
     var list_shapes = ['cube', 'diamond', 'dodecahedron', 'gem', 'humanoid', 'icosahedron', 'icosphere',
-        'magnolia', 'shuttle', 'skyscraper', 'hand', 'hand2',
+        'magnolia', 'shuttle', 'skyscraper', 'hand', 'hand2', 'plane', 'bee',
         'teapot', 'tetrahedron', 'toroid', 'torusknot', 'twistedtorus', 'head'];
-    var current_shape = list_shapes[0];
+    var current_shape = 'bee';
 
     let divider = 500;  // divider to adapt shapes to the WebGL space coordinates
     let geometry, mesh; // global variables to access in different contexts
 
     let settings = {
-        rendering: 'TRIANGLE_STRIP',
+        rendering: 'TRIANGLES',
         texture: textures[0],
         name: current_shape,
         isSpinning: false

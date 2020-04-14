@@ -13,7 +13,7 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     let settings = {
         rendering: 'TRIANGLE_STRIP',
         texture: textures[0],
-        isSpinning: false,
+        isSpinning: true ,
         exponent: 5,
         projection: 3,
         disorder: 0
