@@ -1,37 +1,22 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from './js/ogl/ogl.js';
 import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} from "./js/ogl_constants.js";
 {
-    const getRandomInt = (max) => Math.floor(Math.random() * Math.floor(max));
-    var list_ref = String(window.location.href).split('?')[1].split('=');
-    console.log(list_ref);
+
     let info = document.getElementById('info');
-    var list_shapes = [];
-    var title = '';
-
-    if (list_ref[1] != 'kids') {
-        list_shapes = ['cube', 'diamond', 'dodecahedron', 'gem', 'humanoid', 'icosahedron', 'icosphere',
-            'magnolia', 'shuttle', 'skyscraper', 'hand', 'hand2', 'plane', 'bee',
-            'teapot', 'tetrahedron', 'toroid', 'torusknot', 'twistedtorus', 'head'];
-        title = "3D object : ";
-    } else {
-        list_shapes = ['eagle_vessel', 'giletto_logo'];
-        title = "3D object modelized by Kids on Tinkercad : "
-    }
-
-    var current_shape = list_shapes[getRandomInt(list_shapes.length)];
+    var current_shape = 'bee';
 
     let divider = 500;  // divider to adapt shapes to the WebGL space coordinates
     let geometry, mesh; // global variables to access in different contexts
 
     let settings = {
         rendering: 'TRIANGLES',
-        texture: textures[0],
+        texture: "0=None",
         name: current_shape,
         isSpinning: false
     };
 
     function shapeGenerator(value, rendering) {
-        info.innerHTML = title + value;
+        info.innerHTML = "3D object : " + value;
 
         let newshape = shapes3dToolbox.import3dObjAsync ({
             url: "./assets/"+settings.name+".obj.txt",
@@ -40,17 +25,7 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
             center: true
         }, function(newshape){
             let xportMesh = [];
-            /*
-            obj3d.polygons.forEach((vertices, idx) => {
-                let shape = [];
-                vertices.forEach(item => {
-                    shape.push(obj3d.points[item]);
-                });
-            });
-            */
-            console.log(newshape);
             newshape.polygons.forEach(polygons => {
-
                 polygons.forEach(poly => {
                     let point = newshape.points[poly];
                     xportMesh.push(point.x/divider);
@@ -58,7 +33,6 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
                     xportMesh.push(point.z/divider);
                 })
             });
-//console.log(xportMesh);
             geometry = new Geometry(gl, {
                 position: {size: 3, data: new Float32Array(xportMesh)}
             });
@@ -151,49 +125,8 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
         }
     }
 
-    function addGui(obj) {
-        let gui = new dat.gui.GUI();
-
-        // Choose from accepted values
-        let guiSurfList = gui.add(obj, 'name', list_shapes).listen();
-        guiSurfList.onChange(function(value){
-            shapeGenerator(value, obj.rendering);
-        });
-
-        let guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();  // none by default
-        guiRndrMode.onChange(function(value){
-            obj.rendering = value;
-            scene = new Transform();
-            let mesh = new Mesh(gl, {mode: gl[value], geometry, program});
-            mesh.setParent(scene);
-        });
-
-        let guiTexture = gui.add(obj, 'texture', textures, obj.texture).listen();  // none by default
-        guiTexture.onChange(function(value){
-            if (obj.texture != null) {
-                obj.texture = value;
-                if (extract_code(obj.texture) != 0) {
-                    const img = new Image();
-                    img.onload = () => texture.image = img;
-                    img.src = 'assets/' + extract_value(obj.texture);
-                    program.uniforms.tMap = {value: texture};
-                } else {
-                    texture = new Texture(gl);
-                    program.uniforms.tMap = {value: texture};
-                }
-            }
-        });
-
-        let gui_spinning = gui.add(obj, 'isSpinning').listen();
-        gui_spinning.onChange(function(value){
-            obj.isSpinning = Boolean(value);
-        });
-
-    }
-
     document.addEventListener("DOMContentLoaded", function (event) {
         console.log("DOM fully loaded and parsed");
-        addGui(settings);
         requestAnimationFrame(update);
     });
 }
