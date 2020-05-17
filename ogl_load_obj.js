@@ -14,7 +14,7 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
             'teapot', 'tetrahedron', 'toroid', 'torusknot', 'twistedtorus', 'head'];
         title = "3D object : ";
     } else {
-        list_shapes = ['eagle_vessel', 'giletto_logo'];
+        list_shapes = ['eagle_vessel', 'giletto_logo', 'lol_mdr_yo_hahaha', 'parke', 'charniere'];
         title = "3D object modelized by Kids on Tinkercad : "
     }
 

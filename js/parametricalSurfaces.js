@@ -983,7 +983,6 @@ var parametricalSurfaces = (function () {
             rotation: {x: TAU / 8}
         });
 
-
         surface_types.push({
             id: 62,
             name: 'Volcano',
@@ -1221,6 +1220,94 @@ var parametricalSurfaces = (function () {
             rotation: {x: TAU / 8}
         });
     }
+
+    surface_types.push({
+        id: 71,
+        name: 'Drop',
+        list: 3,
+        comment: "https://math.stackexchange.com/questions/51539/a-math-function-that-draws-water-droplet-shape",
+        params: {A: 1, B: 5 / 2},
+        u: {begin: 0, end: TAU, step: PI / 40},
+        v: {begin: -PI, end: PI, step: PI / 40},
+        fx: (u, v) => {
+            let r = A * (1 - sin(v)) * cos(v);
+            return cos(u) * r;
+        },
+        fy: (u, v) => {
+            return B * (sin(v) - 1) + 2;
+        },
+        fz: (u, v) => {
+            let r = A * (1 - sin(v)) * cos(v);
+            return sin(u) * r;
+        },
+        scale: DEFAULT_SCALE
+    });
+
+    surface_types.push({
+        id: 72,
+        name: 'Drop 2 (Pastille)',
+        list: 3,
+        comment: "https://math.stackexchange.com/questions/51539/a-math-function-that-draws-water-droplet-shape",
+        params: {A: 3, B: 5 / 2, C: 5},
+        u: {begin: 0, end: TAU, step: PI / 80},
+        v: {begin: -PI, end: PI, step: PI / 80},
+        fx: (u, v) => {
+            let r = A * (C - sin(v)) * cos(v);
+            return cos(u) * r + C;
+        },
+        fy: (u, v) => {
+            return B * (sin(v) - C) + 2;
+        },
+        fz: (u, v) => {
+            let r = A * (C - sin(v)) * cos(v);
+            return sin(u) * r;
+        },
+        scale: DEFAULT_SCALE
+    });
+
+    surface_types.push({
+        id: 73,
+        name: 'Drop 3 (stretched drop)',
+        list: 3,
+        comment: "https://math.stackexchange.com/questions/51539/a-math-function-that-draws-water-droplet-shape",
+        params: {A: 3, B: 5 / 2, C: 5},
+        u: {begin: 0, end: TAU, step: PI / 80},
+        v: {begin: -PI, end: PI, step: PI / 80},
+        fx: (u, v) => {
+            let r = A * (C - sin(v)) * cos(v);
+            return cos(u) * r + C;
+        },
+        fy: (u, v) => {
+            return B * (sin(v) - C) + 2;
+        },
+        fz: (u, v) => {
+            let r = A * (1 - sin(v)) * cos(v);
+            return sin(u) * r;
+        },
+        scale: DEFAULT_SCALE
+    });
+
+    surface_types.push({
+        id: 74,
+        name: 'Drop 4 (weird drop)',
+        list: 3,
+        comment: "https://math.stackexchange.com/questions/51539/a-math-function-that-draws-water-droplet-shape",
+        params: {A: 3, B: 5 / 2, C: 5},
+        u: {begin: 0, end: TAU, step: PI / 80},
+        v: {begin: -PI, end: PI, step: PI / 80},
+        fx: (u, v) => {
+            let r = A * (C - sin(v)) * cos(v * C);
+            return cos(u) * r + C;
+        },
+        fy: (u, v) => {
+            return B * (sin(v) - C) + 2 ;
+        },
+        fz: (u, v) => {
+            let r = A * (1 - sin(v)) * cos(v*C);
+            return sin(u) * r;
+        },
+        scale: DEFAULT_SCALE
+    });
 
     /**
      * Check if the source code of a parametric function is correct
