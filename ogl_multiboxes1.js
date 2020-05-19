@@ -2,7 +2,7 @@ import { Renderer, Camera, Transform, Program, Mesh, Box, Orbit } from './js/ogl
 
 {
     let info = document.getElementById('info');
-    info.innerHTML = "3D object : anime box with TweenMax" ;
+    info.innerHTML = "3D object : mutiboxes 1" ;
 
     const update = () => {
 
@@ -32,7 +32,6 @@ import { Renderer, Camera, Transform, Program, Mesh, Box, Orbit } from './js/ogl
                 gl_FragColor.a = 1.0;
             }
         `;
-
         {
             const renderer = new Renderer({ dpr: 2 });
             const gl = renderer.gl;
@@ -40,7 +39,7 @@ import { Renderer, Camera, Transform, Program, Mesh, Box, Orbit } from './js/ogl
             gl.clearColor(1, 1, 1, 1);
 
             const camera = new Camera(gl, { fov: 35 });
-            camera.position.set(0, 1, 7);
+            camera.position.set(0, 0, -40);
             camera.lookAt([0, 0, 0]);
             const controls = new Orbit(camera);
 
@@ -54,7 +53,8 @@ import { Renderer, Camera, Transform, Program, Mesh, Box, Orbit } from './js/ogl
 
             const scene = new Transform();
 
-            const cubeGeometry = new Box(gl);
+            let side  = 1.5;
+            const cubeGeometry = new Box(gl, {width: side, height: side, depth: side});
 
             const program = new Program(gl, {
                 vertex,
@@ -64,33 +64,57 @@ import { Renderer, Camera, Transform, Program, Mesh, Box, Orbit } from './js/ogl
                 cullFace: null,
             });
 
-            const cube = new Mesh(gl, { geometry: cubeGeometry, program });
-            cube.position.set(0, -1.3, 0);
-            cube.setParent(scene);
 
-            var t = Math.random() * 0.6 + 0.3;
+            for (let j=0; j<30; j+=5) {
+                for (let i = 0; i < 10; i++) {
+                    for (let k=15; k>-15; k-=3) {
 
-            TweenMax.fromTo( cube.scale, t,
-                {
-                    x: 1 ,
-                    y: 1 ,
-                    z: 1 ,
-                    ease: Power2.easeInOut,
-                    delay: 10
-                },
-                {
-                    x: 1 + Math.random() * 1.5,
-                    y: 1 + Math.random() * 5,
-                    z: 1 + Math.random() * 1.5,
-                    ease: Power2.easeInOut
-                }).repeat(0);
+                        const cube = new Mesh(gl, { geometry: cubeGeometry, program });
+                        cube.position.set((i - 5) * 3, k, j);
+                        cube.setParent(scene);
+
+                    }
+                }
+            }
+
+/*
+            TweenMax.to(cube.position, 1.5, {
+                y: -1.5,
+                ease: 'Bounce.easeOut'
+            });
+
+            TweenMax.to( cube.scale, .5, {
+                    y: .5,
+                    ease: 'Power2.easeInOut',
+                    delay: .5
+                });
+
+            TweenMax.to( cube.scale, .2, {
+                y: 1,
+                ease: 'Power2.easeInOut',
+                delay: 1.5
+            });
+
+            TweenMax.to(cube.position, 1.5, {
+                y: 1.5,
+                ease: 'Bounce.easeOut',
+                delay: 1.6
+            });
+
+            TweenMax.to(cube.position, 1.5, {
+                y: -1.5,
+                ease: 'Bounce.easeOut',
+                delay: 3
+            });
+*/
 
             requestAnimationFrame(update);
             function update() {
                 requestAnimationFrame(update);
                 controls.update();
 
-                cube.rotation.y -= 0.04;
+
+             //   cube.rotation.y -= 0.04;
 
                 renderer.render({ scene, camera });
             }
