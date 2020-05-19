@@ -4,7 +4,7 @@ import { Renderer, Camera, Transform, Vec2, Program, Mesh, Box, Orbit, Raycast }
     let info = document.getElementById('info');
     info.innerHTML = "3D object : mutiboxes 2 (detect mouse hit)" ;
 
-    const update = () => {
+    const starter = () => {
 
         const vertex = /* glsl */ `
             precision highp float;
@@ -144,6 +144,6 @@ import { Renderer, Camera, Transform, Vec2, Program, Mesh, Box, Orbit, Raycast }
 
     document.addEventListener("DOMContentLoaded", function (event) {
         console.log("DOM fully loaded and parsed");
-        requestAnimationFrame(update);
+        starter();
     });
 }

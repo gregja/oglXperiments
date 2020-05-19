@@ -4,7 +4,7 @@ import { Renderer, Camera, Transform, Program, Mesh, Box, Orbit } from './js/ogl
     let info = document.getElementById('info');
     info.innerHTML = "3D object : mutiboxes 1" ;
 
-    const update = () => {
+    const starter = () => {
 
         const vertex = /* glsl */ `
             precision highp float;
@@ -77,53 +77,20 @@ import { Renderer, Camera, Transform, Program, Mesh, Box, Orbit } from './js/ogl
                 }
             }
 
-/*
-            TweenMax.to(cube.position, 1.5, {
-                y: -1.5,
-                ease: 'Bounce.easeOut'
-            });
-
-            TweenMax.to( cube.scale, .5, {
-                    y: .5,
-                    ease: 'Power2.easeInOut',
-                    delay: .5
-                });
-
-            TweenMax.to( cube.scale, .2, {
-                y: 1,
-                ease: 'Power2.easeInOut',
-                delay: 1.5
-            });
-
-            TweenMax.to(cube.position, 1.5, {
-                y: 1.5,
-                ease: 'Bounce.easeOut',
-                delay: 1.6
-            });
-
-            TweenMax.to(cube.position, 1.5, {
-                y: -1.5,
-                ease: 'Bounce.easeOut',
-                delay: 3
-            });
-*/
-
-            requestAnimationFrame(update);
             function update() {
                 requestAnimationFrame(update);
                 controls.update();
-
-
              //   cube.rotation.y -= 0.04;
-
                 renderer.render({ scene, camera });
             }
+
+            requestAnimationFrame(update);
         }
 
     };
 
     document.addEventListener("DOMContentLoaded", function (event) {
         console.log("DOM fully loaded and parsed");
-        requestAnimationFrame(update);
+        starter();
     });
 }
