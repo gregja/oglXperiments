@@ -3,7 +3,7 @@ import {Renderer, Camera, Transform, Texture, Program,  Mesh, Box, Orbit} from '
 {
 
     let info = document.getElementById('info');
-    info.innerHTML = "Frog - mapping image on cubes" ;
+    info.innerHTML = "Frog - mapping image on cubes (physics with Oimo.js)" ;
 
     const starter = () => {
 
@@ -51,8 +51,8 @@ import {Renderer, Camera, Transform, Texture, Program,  Mesh, Box, Orbit} from '
             gl.clearColor(1, 1, 1, 1);
 
             const camera = new Camera(gl, {fov: 45});
-            camera.position.set(3, 1.5, 4);
-            camera.lookAt([1, 0.2, 0]);
+            camera.position.set(0, 0, -10);
+
             const controls = new Orbit(camera);
 
             function resize() {
@@ -62,6 +62,71 @@ import {Renderer, Camera, Transform, Texture, Program,  Mesh, Box, Orbit} from '
 
             window.addEventListener('resize', resize, false);
             resize();
+
+            const world = new OIMO.World({
+                timestep: 1/60 * 2,
+                iterations: 8,
+                broadphase: 2, // 1 brute force, 2 sweep and prune, 3 volume tree
+                worldscale: 1, // scale full world
+                random: true,  // randomize sample
+                info: false,   // calculate statistic or not
+                gravity: [0,-9.8,0]
+            });
+
+            let shapes = {
+                cube: {
+                    side: {
+                        x: 1,
+                        y: 1,
+                        z: 1
+                    },
+                    pos: {
+                        x:0,
+                        y:4,
+                        z:0
+                    },
+                    rot: {
+                        x:0,
+                        y:0,
+                        z:0
+                    }
+                },
+                ground: {
+                    side: {
+                        x: 4,
+                        y: .2,
+                        z: 4
+                    },
+                    pos: {
+                        x:0,
+                        y:-2,
+                        z:0
+                    },
+                    rot: {
+                        x:0,
+                        y:0,
+                        z:0
+                    }
+                },
+            }
+
+            let oimoCube = world.add({
+                type: "box",
+                size: [shapes.cube.side.x, shapes.cube.side.y, shapes.cube.side.z],
+                pos: [shapes.cube.pos.x, shapes.cube.pos.y, shapes.cube.pos.z],
+                rot: [shapes.cube.rot.x, shapes.cube.rot.y, shapes.cube.rot.z],
+                move: true,
+                density: 1
+            });
+
+            let oimoGround = world.add({
+                type: "box",
+                size: [shapes.ground.side.x, shapes.ground.side.y, shapes.ground.side.z],
+                pos: [shapes.ground.pos.x, shapes.ground.pos.y, shapes.ground.pos.z],
+                rot: [shapes.ground.rot.x, shapes.ground.rot.y, shapes.ground.rot.z],
+                move: false,
+                density: 1
+            });
 
             const scene = new Transform();
 
@@ -86,38 +151,43 @@ import {Renderer, Camera, Transform, Texture, Program,  Mesh, Box, Orbit} from '
                 cullFace: null,
             });
 
-            let side = 2;
-            const imgGeometry1 = new Box(gl, {width: side, height: side, depth: side});
+            const imgGeometry1 = new Box(gl, {width: shapes.cube.side.x, height: shapes.cube.side.y, depth: shapes.cube.side.z});
 
             const boxMesh1 = new Mesh(gl, {
                 geometry: imgGeometry1,
                 program: program
             });
-            boxMesh1.position.set(0, 0, 0);
+            boxMesh1.position.set(shapes.cube.pos.x, shapes.cube.pos.y, shapes.cube.pos.z);
+            boxMesh1.rotation.set(shapes.cube.rot.x, shapes.cube.rot.y, shapes.cube.rot.z);
             //boxMesh1.scale.set(1.5);
             boxMesh1.setParent(scene);
 
-            const imgGeometry2 = new Box(gl, {width: 4, height: .2, depth: 4});
+            const imgGeometry2 = new Box(gl, {width: shapes.ground.side.x, height: shapes.ground.side.y, depth: shapes.ground.side.z});
 
             const boxMesh2 = new Mesh(gl, {
                 geometry: imgGeometry2,
                 program: program
             });
-            boxMesh2.position.set(0, -1, 0);
+            boxMesh2.position.set(shapes.ground.pos.x, shapes.ground.pos.y, shapes.ground.pos.z);
             //boxMesh2.scale.set(1.5);
             boxMesh2.setParent(scene);
-
-            requestAnimationFrame(update);
 
             function update(t) {
                 requestAnimationFrame(update);
                 controls.update();
 
-                boxMesh1.rotation.y += 0.003;
-                boxMesh2.rotation.y += 0.003;
+                world.step();
+
+                let pos = oimoCube.getPosition();
+                boxMesh1.position.set(pos.x, pos.y, pos.z);
+                let rot = oimoCube.getQuaternion();
+                boxMesh1.rotation.set(rot.x, rot.y, rot.z, rot.w);
 
                 renderer.render({scene, camera});
             }
+
+            requestAnimationFrame(update);
+
         }
     };
 

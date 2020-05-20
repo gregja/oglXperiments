@@ -1,9 +1,9 @@
-import {Renderer, Camera, Transform, Texture, Program,  Mesh, Box, Orbit} from './js/ogl/ogl.js';
+import {Renderer, Camera, Transform, Texture, Program,  Mesh, Box, Sphere, Orbit} from './js/ogl/ogl.js';
 
 {
 
     let info = document.getElementById('info');
-    info.innerHTML = "Frog - mapping image on cubes" ;
+    info.innerHTML = "Frog - mapping the same image on sphere and cube" ;
 
     const starter = () => {
 
@@ -70,7 +70,7 @@ import {Renderer, Camera, Transform, Texture, Program,  Mesh, Box, Orbit} from '
 
             // update image value with source once loaded
             const img = new Image();
-            img.src = 'assets/frog_AkwjW.jpg';
+            img.src = 'assets/football_map.png';
             img.onload = () => texture.image = img;
 
             // Alternatively, you can use the TextureLoader class's load method that handles
@@ -86,8 +86,8 @@ import {Renderer, Camera, Transform, Texture, Program,  Mesh, Box, Orbit} from '
                 cullFace: null,
             });
 
-            let side = 2;
-            const imgGeometry1 = new Box(gl, {width: side, height: side, depth: side});
+            let side = .5;
+            const imgGeometry1 = new Sphere(gl, {radius: side});
 
             const boxMesh1 = new Mesh(gl, {
                 geometry: imgGeometry1,

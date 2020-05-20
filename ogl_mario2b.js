@@ -1,8 +1,8 @@
-import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit} from './js/ogl/ogl.js';
+import {Renderer, Camera, Transform, Program, Mesh, Box, Texture, Color, Orbit} from './js/ogl/ogl.js';
 
 {
     let info = document.getElementById('info');
-    info.innerHTML = "3D object : Mario on rolling cubes";
+    info.innerHTML = "3D object : Mario - physics with Oimo + texture";
 
     // Adaptation for OGL of an example written by CX20 on this project : https://github.com/cx20/jsdo.it-archives
 
@@ -45,7 +45,7 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit} from './j
 
         function getRgbColor(c) {
             var colorHash = {
-                "無": "#DCAA6B",    // beige (for background)
+                "無": "#DCAA6B",    // beige (for background or Mario)
                 "白": "#ffffff",    // white
                 "肌": "#ffcccc",    // skin
                 "茶": "#800000",    // tea
@@ -54,12 +54,12 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit} from './j
                 "緑": "#00ff00",    // green
                 "水": "#00ffff",    // water
                 "青": "#0000ff",    // blue
-                "紫": "#800080"     // purple
+                "紫": "#800080",    // purple
             };
             return colorHash[c];
         }
 
-        const vertex = /* glsl */ `
+        const vertex4cube = /* glsl */ `
             precision highp float;
             precision highp int;
             attribute vec3 position;
@@ -74,7 +74,7 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit} from './j
             }
         `;
 
-        const fragment = /* glsl */ `
+        const fragment4cube = /* glsl */ `
             precision highp float;
             precision highp int;
             uniform vec3 uColor;
@@ -87,15 +87,96 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit} from './j
             }
         `;
 
+        const vertex4texture = /* glsl */ `
+            precision highp float;
+            precision highp int;
+            attribute vec2 uv;
+            attribute vec3 position;
+            attribute vec3 normal;
+            uniform mat4 modelViewMatrix;
+            uniform mat4 projectionMatrix;
+            uniform mat3 normalMatrix;
+            varying vec2 vUv;
+            varying vec3 vNormal;
+            void main() {
+                vUv = uv;
+                vNormal = normalize(normalMatrix * normal);
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `;
+
+        const fragment4texture = /* glsl */ `
+            precision highp float;
+            precision highp int;
+            uniform sampler2D tMap;
+            varying vec2 vUv;
+            varying vec3 vNormal;
+            void main() {
+                vec3 normal = normalize(vNormal);
+                vec3 tex = texture2D(tMap, vUv).rgb;
+                vec3 light = normalize(vec3(0.5, 1.0, -0.3));
+                float shading = dot(normal, light) * 0.15;
+                gl_FragColor.rgb = tex + shading;
+                gl_FragColor.a = 1.0;
+            }
+        `;
+
+
         const renderer = new Renderer({dpr: 2});
         const gl = renderer.gl;
         document.body.appendChild(gl.canvas);
         gl.clearColor(1, 1, 1, 1);
 
-        const camera = new Camera(gl, {fov: 35});
-        camera.position.set(0, 0, -40);
+        const camera = new Camera(gl, {fov: 45});
+        camera.position.set(0, 0, -60);
         camera.lookAt([0, 0, 0]);
         const controls = new Orbit(camera);
+
+        // Upload empty texture while source loading
+        const texture = new Texture(gl);
+
+        const img = new Image();
+        img.src = 'assets/frog_AkwjW.jpg';
+        img.onload = () => texture.image = img;
+
+        var world = new OIMO.World({
+            timestep: 1/60 * 5,
+            iterations: 8,
+            broadphase: 2, // 1 brute force, 2 sweep and prune, 3 volume tree
+            worldscale: 1, // scale full world
+            random: true,  // randomize sample
+            info: false,   // calculate statistic or not
+            gravity: [0,-9.8,0]
+        });
+
+        let shapes = {
+            ground: {
+                side: {
+                    x: 30,
+                    y: 2,
+                    z: 30
+                },
+                pos: {
+                    x:0,
+                    y:-20,
+                    z:0
+                },
+                rot: {
+                    x:0,
+                    y:0,
+                    z:0
+                }
+            },
+        }
+
+        var oimoGround = world.add({
+            type: "box",
+            size: [shapes.ground.side.x, shapes.ground.side.y, shapes.ground.side.z],
+            pos: [shapes.ground.pos.x, shapes.ground.pos.y, shapes.ground.pos.z],
+            rot: [shapes.ground.rot.x, shapes.ground.rot.y, shapes.ground.rot.z],
+            move: false,
+            density: 1
+        });
 
         function resize() {
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -107,10 +188,25 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit} from './j
 
         const scene = new Transform();
 
+        const groundProgram = new Program(gl, {
+            vertex: vertex4texture,
+            fragment: fragment4texture,
+            uniforms: {
+                tMap: {value: texture},
+            },
+            cullFace: null,
+        });
+
+        const groundGeometry = new Box(gl, {width: shapes.ground.side.x, height: shapes.ground.side.y, depth: shapes.ground.side.z});
+        let meshGround = new Mesh(gl, {geometry: groundGeometry, program: groundProgram});
+        meshGround.position.set(shapes.ground.pos.x, shapes.ground.pos.y, shapes.ground.pos.z);
+        meshGround.setParent(scene);
+
         let side = 0.8;
         const cubeGeometry = new Box(gl, {width: side, height: side, depth: side});
 
         let cubes = [];
+
         for (let i = 0, len = dataSet.length; i < len; i++) {
             let x = i % 16;
             let y = Math.floor(i / 16);
@@ -119,8 +215,8 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit} from './j
             let color = getRgbColor(dataSet[i]);
 
             const cubeProgram = new Program(gl, {
-                vertex,
-                fragment,
+                vertex: vertex4cube,
+                fragment: fragment4cube,
                 uniforms: {
                     uColor: {value: new Color(color)},
                 },
@@ -131,17 +227,31 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit} from './j
             const cube = new Mesh(gl, {geometry: cubeGeometry, program: cubeProgram});
             cube.position.set(px, pz, 0);
             cube.setParent(scene);
-            cubes.push(cube);
+
+            let oimoCube = world.add({
+                type: "box",
+                size: [side, side, side],
+                pos: [px, pz, 0],
+                rot: [0, 0, 0],
+                move: true,
+                density: 1
+            });
+            cubes.push({oimo: oimoCube, mesh:cube});
         }
 
         function update() {
             requestAnimationFrame(update);
             controls.update();
 
-            cubes.forEach(cube => {
-                cube.rotation.z -= 0.02;
-                cube.rotation.y -= 0.02;
-            });
+            world.step();
+
+            for (let i=0, len=cubes.length; i<len; i++) {
+                let cube = cubes[i];
+                let pos = cube.oimo.getPosition();
+                cube.mesh.position.set(pos.x, pos.y, pos.z);
+                let rot = cube.oimo.getQuaternion();
+                cube.mesh.rotation.set(rot.x, rot.y, rot.z, rot.w);
+            }
 
             renderer.render({scene, camera});
         }

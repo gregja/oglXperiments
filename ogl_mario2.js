@@ -2,7 +2,7 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit} from './j
 
 {
     let info = document.getElementById('info');
-    info.innerHTML = "3D object : Mario on rolling cubes";
+    info.innerHTML = "3D object : Mario - physics with Oimo.js";
 
     // Adaptation for OGL of an example written by CX20 on this project : https://github.com/cx20/jsdo.it-archives
 
@@ -45,7 +45,7 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit} from './j
 
         function getRgbColor(c) {
             var colorHash = {
-                "無": "#DCAA6B",    // beige (for background)
+                "無": "#DCAA6B",    // beige (for background or Mario)
                 "白": "#ffffff",    // white
                 "肌": "#ffcccc",    // skin
                 "茶": "#800000",    // tea
@@ -54,7 +54,8 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit} from './j
                 "緑": "#00ff00",    // green
                 "水": "#00ffff",    // water
                 "青": "#0000ff",    // blue
-                "紫": "#800080"     // purple
+                "紫": "#800080",    // purple
+                "闇": "#737373",    // dark grey (for ground)
             };
             return colorHash[c];
         }
@@ -87,13 +88,52 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit} from './j
             }
         `;
 
+        var world = new OIMO.World({
+            timestep: 1/60 * 5,
+            iterations: 8,
+            broadphase: 2, // 1 brute force, 2 sweep and prune, 3 volume tree
+            worldscale: 1, // scale full world
+            random: true,  // randomize sample
+            info: false,   // calculate statistic or not
+            gravity: [0,-9.8,0]
+        });
+
+        let shapes = {
+            ground: {
+                side: {
+                    x: 30,
+                    y: 2,
+                    z: 30
+                },
+                pos: {
+                    x:0,
+                    y:-20,
+                    z:0
+                },
+                rot: {
+                    x:0,
+                    y:0,
+                    z:0
+                }
+            },
+        }
+
+        let oimoGround = world.add({
+            type: "box",
+            size: [shapes.ground.side.x, shapes.ground.side.y, shapes.ground.side.z],
+            pos: [shapes.ground.pos.x, shapes.ground.pos.y, shapes.ground.pos.z],
+            rot: [shapes.ground.rot.x, shapes.ground.rot.y, shapes.ground.rot.z],
+            move: false,
+            density: 1
+        });
+
         const renderer = new Renderer({dpr: 2});
         const gl = renderer.gl;
         document.body.appendChild(gl.canvas);
         gl.clearColor(1, 1, 1, 1);
 
-        const camera = new Camera(gl, {fov: 35});
-        camera.position.set(0, 0, -40);
+        const camera = new Camera(gl, {fov: 45});
+        camera.position.set(0, 0, -60);
         camera.lookAt([0, 0, 0]);
         const controls = new Orbit(camera);
 
@@ -106,6 +146,22 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit} from './j
         resize();
 
         const scene = new Transform();
+
+        const groundProgram = new Program(gl, {
+            vertex,
+            fragment,
+            uniforms: {
+                uColor: {value: new Color(getRgbColor("闇"))},
+            },
+            transparent: false,
+            // Don't cull faces so that plane is double sided - default is gl.BACK
+            cullFace: null,
+        });
+
+        const groundGeometry = new Box(gl, {width: shapes.ground.side.x, height: shapes.ground.side.y, depth: shapes.ground.side.z});
+        let meshGround = new Mesh(gl, {geometry: groundGeometry, program: groundProgram});
+        meshGround.position.set(shapes.ground.pos.x, shapes.ground.pos.y, shapes.ground.pos.z);
+        meshGround.setParent(scene);
 
         let side = 0.8;
         const cubeGeometry = new Box(gl, {width: side, height: side, depth: side});
@@ -131,17 +187,31 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit} from './j
             const cube = new Mesh(gl, {geometry: cubeGeometry, program: cubeProgram});
             cube.position.set(px, pz, 0);
             cube.setParent(scene);
-            cubes.push(cube);
+
+            let oimoCube = world.add({
+                type: "box",
+                size: [side, side, side],
+                pos: [px, pz, 0],
+                rot: [0, 0, 0],
+                move: true,
+                density: 1
+            });
+            cubes.push({oimo: oimoCube, mesh:cube});
         }
 
         function update() {
             requestAnimationFrame(update);
             controls.update();
 
-            cubes.forEach(cube => {
-                cube.rotation.z -= 0.02;
-                cube.rotation.y -= 0.02;
-            });
+            world.step();
+
+            for (let i=0, len=cubes.length; i<len; i++) {
+                let cube = cubes[i];
+                let pos = cube.oimo.getPosition();
+                cube.mesh.position.set(pos.x, pos.y, pos.z);
+                let rot = cube.oimo.getQuaternion();
+                cube.mesh.rotation.set(rot.x, rot.y, rot.z, rot.w);
+            }
 
             renderer.render({scene, camera});
         }
