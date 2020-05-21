@@ -31,6 +31,23 @@
 <div class="flex-container" id="container"></div>
 
 <script>
+    /*
+    // dataliste generated from the old index.html, with the code below :
+    var selection = document.querySelectorAll('a');
+    var datas = [];
+    for(let i=0; i<selection.length; i++ ) {
+       let item = selection[i];
+
+        datas.push({
+            path: item.getAttribute('href'),
+            title: item.innerHTML,
+            screenshot: "",
+            tags: []
+        })
+    }
+    console.log(JSON.stringify(datas));
+    */
+
     var dataliste = [{
         "path": "ogl_surf_param1.html",
         "title": "Parametrical surfaces",
@@ -196,7 +213,7 @@
             a.appendChild(img);
             div.appendChild(a);
             let p = document.createElement('p');
-            p.innerText = item.title;
+            p.innerHTML = item.title;
             div.appendChild(p);
             container.appendChild(div);
         });
