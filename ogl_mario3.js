@@ -206,11 +206,11 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Sphere, Color, Orbit} f
             world.step();
 
             for (let i=0, len=spheres.length; i<len; i++) {
-                let cube = spheres[i];
-                let pos = cube.oimo.getPosition();
-                cube.mesh.position.set(pos.x, pos.y, pos.z);
-                let rot = cube.oimo.getQuaternion();
-                cube.mesh.rotation.set(rot.x, rot.y, rot.z, rot.w);
+                let sphere = spheres[i];
+                let pos = sphere.oimo.getPosition();
+                sphere.mesh.position.set(pos.x, pos.y, pos.z);
+                let rot = sphere.oimo.getQuaternion();
+                sphere.mesh.rotation.set(rot.x, rot.y, rot.z, rot.w);
             }
 
             renderer.render({scene, camera});

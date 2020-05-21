@@ -5,46 +5,213 @@
     <title>oglXperiments</title>
     <link rel="stylesheet" href="css/w3.css">
     <link rel="stylesheet" href="css/main.css">
+    <style>
+        /* https://www.w3schools.com/css/tryit.asp?filename=trycss3_flexbox_flex-wrap_wrap  */
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            background-color: mintcream;
+        }
+
+        .flex-container > div {
+            background-color: #f1f1f1;
+            width: 200px;
+            margin: 10px;
+            text-align: center;
+        /*    line-height: 75px;  */
+            font-size: 12px;
+        }
+    </style>
+
 </head>
 <body>
 <div>
-    <h2>Experiments with Ogl.js</h2>
-    <ul class="zdog_list">
-        <li><a href="ogl_surf_param1.html">Parametrical surfaces</a></li>
-        <li><a href="ogl_primitives.html">Primitives 3D</a></li>
-        <li><a href="ogl_calabiyau.html">Calabi-Yau</a></li>
-        <li><a href="ogl_shapegenerator.html">Shape Generator</a></li>
-        <li><a href="ogl_load_obj.html?list=other">Load OBJ files</a></li>
-        <li><a href="ogl_load_obj.html?list=kids">Load OBJ files modelized by Kids on Tinkercad</a></li>
-        <li><a href="ogl_boxes_linked.html">Cubes linked v1</a></li>
-        <li><a href="ogl_boxes_linked_v2.html">Cubes linked v2</a></li>
-        <li><a href="ogl_animals.html">Animals running</a></li>  
-        <li><a href="ogl_tunnel.html">Tunnel 3D</a></li>
-        <li><a href="ogl_menger_sponge.html">Menger Sponge</a></li>
-        <li><a href="ogl_menger_flake.html">Menger Snowflake</a></li>
-        <li><a href="ogl_shapes_xcav.html">3D Objects excavated</a></li>
-        <li><a href="ogl_table.html">Table (hierarchy of primitives)</a></li>
-        <li><a href="ogl_weirdsphere.html">Weird spheres</a></li>
-        <li><a href="ogl_ribbon.html">Ribbon</a></li>
-        <li><a href="ogl_flying_box.html">Flying box</a></li>
-        <li><a href="ogl_weird_shape.html">Weird shape</a></li>
-        <li><a href="ogl_boxman.html">Boxman</a></li>
-        <li><a href="ogl_animebox1.html">Animation Box with Anime.js</a></li>
-        <li><a href="ogl_animebox2.html">Animation Box with TweenMax</a></li>
-        <li><a href="ogl_animebox3.html">Animation Box with TweenMax (bouncing & chaining)</a></li>
-		<li><a href="ogl_multiboxes1.html">Multiboxes 1</a></li>
-        <li><a href="ogl_multiboxes2.html">Multiboxes 2 (detect mouse hit)</a></li>
-        <li><a href="ogl_mario1.html">Mario on rolling cubes</a></li>
-        <li><a href="ogl_mario2.html">Mario - physics with Oimo.js</a></li>
-        <li><a href="ogl_mario2b.html">Mario - physics with Oimo.js + texture for ground</a></li>
-    <!--    <li><a href="ogl_mario3.html">Mario - physics with Oimo.js (spheres) </a></li>   -->
-        <li><a href="ogl_frogphysi1.html">Frog - mapping image on cubes</a></li>
-        <li><a href="ogl_frogphysi2.html">Frog - physics with Oimo.js</a></li>
-        <li><a href="ogl_football1.html">Football - mapping</a></li>
-    </ul>
-    <br>
-    <p><a href="https://github.com/gregja/oglXperiments/" target="_blank">Project oglXperiments on Github</a></p>
-    <p><a href="https://github.com/oframe/ogl" target="_blank">OGL on Github</a></p>
+<h2>Experiments with Ogl.js</h2>
+
+<div class="flex-container" id="container"></div>
+
+<script>
+    var dataliste = [{
+        "path": "ogl_surf_param1.html",
+        "title": "Parametrical surfaces",
+        "screenshot": "scr0001.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_primitives.html",
+        "title": "Primitives 3D",
+        "screenshot": "scr0002.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_calabiyau.html",
+        "title": "Calabi-Yau",
+        "screenshot": "scr0003.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_shapegenerator.html",
+        "title": "Shape Generator",
+        "screenshot": "scr0004.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_load_obj.html?list=other",
+        "title": "Load OBJ files",
+        "screenshot": "scr0005.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_load_obj.html?list=kids",
+        "title": "Load OBJ files modelized by Kids on Tinkercad",
+        "screenshot": "scr0006.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_boxes_linked.html",
+        "title": "Cubes linked v1",
+        "screenshot": "scr0007.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_boxes_linked_v2.html",
+        "title": "Cubes linked v2",
+        "screenshot": "scr0008.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_animals.html",
+        "title": "Animals running",
+        "screenshot": "scr0009.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_tunnel.html",
+        "title": "Tunnel 3D",
+        "screenshot": "scr0010.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_menger_sponge.html",
+        "title": "Menger Sponge",
+        "screenshot": "scr0011.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_menger_flake.html",
+        "title": "Menger Snowflake",
+        "screenshot": "scr0012.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_shapes_xcav.html",
+        "title": "3D Objects excavated",
+        "screenshot": "scr0013.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_table.html",
+        "title": "Table (hierarchy of primitives)",
+        "screenshot": "scr0014.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_weirdsphere.html",
+        "title": "Weird spheres",
+        "screenshot": "scr0015.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_ribbon.html", "title": "Ribbon", "screenshot": "scr0016.PNG", "tags": []
+    }, {
+        "path": "ogl_flying_box.html",
+        "title": "Flying box",
+        "screenshot": "scr0017.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_weird_shape.html",
+        "title": "Weird shape",
+        "screenshot": "scr0018.PNG",
+        "tags": []
+    }, {"path": "ogl_boxman.html", "title": "Boxman", "screenshot": "scr0019.PNG", "tags": []}, {
+        "path": "ogl_animebox1.html",
+        "title": "Animation Box with Anime.js",
+        "screenshot": "scr0020.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_animebox2.html",
+        "title": "Animation Box with TweenMax",
+        "screenshot": "scr0021.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_animebox3.html",
+        "title": "Animation Box with TweenMax (bouncing &amp; chaining)",
+        "screenshot": "scr0020.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_multiboxes1.html",
+        "title": "Multiboxes 1",
+        "screenshot": "scr0022.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_multiboxes2.html",
+        "title": "Multiboxes 2 (detect mouse hit)",
+        "screenshot": "scr0023.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_mario1.html",
+        "title": "Mario on rolling cubes",
+        "screenshot": "scr0025.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_mario2.html",
+        "title": "Mario - physics with Oimo.js",
+        "screenshot": "scr0024.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_mario2b.html",
+        "title": "Mario - physics with Oimo.js + texture for ground",
+        "screenshot": "scr0026.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_frogphysi1.html",
+        "title": "Frog - mapping image on cubes",
+        "screenshot": "scr0027.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_frogphysi2.html",
+        "title": "Frog - physics with Oimo.js",
+        "screenshot": "scr0028.PNG",
+        "tags": []
+    }, {
+        "path": "ogl_football1.html",
+        "title": "Football - mapping",
+        "screenshot": "scr0029.PNG",
+        "tags": []
+    }
+    ];
+
+    function fillpage(list) {
+        "use strict";
+        let container = document.getElementById('container');
+
+        list.forEach(item => {
+            let div = document.createElement('div');
+            let a = document.createElement('a');
+            a.setAttribute('href', item.path);
+            a.setAttribute('title', item.title);
+            let img = document.createElement('img');
+            img.setAttribute('width', '200px');
+            img.setAttribute('height', '200px');
+            if (item.hasOwnProperty("screenshot") && item.screenshot != "") {
+                img.src = "screenshots/" + item.screenshot;
+            } else {
+                img.src = "screenshots/default.png";
+            }
+            a.appendChild(img);
+            div.appendChild(a);
+            let p = document.createElement('p');
+            p.innerText = item.title;
+            div.appendChild(p);
+            container.appendChild(div);
+        });
+
+    }
+
+    document.addEventListener("DOMContentLoaded", function (event) {
+        fillpage(dataliste);
+    });
+
+</script>
+
+<br>
+<p><a href="https://github.com/gregja/oglXperiments/" target="_blank">Project oglXperiments on Github</a></p>
+<p><a href="https://github.com/oframe/ogl" target="_blank">OGL on Github</a></p>
 </div>
 </body>
 </html>
