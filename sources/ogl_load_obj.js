@@ -9,12 +9,14 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     var title = '';
 
     if (list_ref[1] != 'kids') {
+        // some objects come from this site : https://people.sc.fsu.edu/~jburkardt/data/obj/obj.html
         list_shapes = ['cube', 'diamond', 'dodecahedron', 'gem', 'humanoid', 'icosahedron', 'icosphere',
             'magnolia', 'shuttle', 'skyscraper', 'hand', 'hand2', 'plane', 'bee',
-            'teapot', 'tetrahedron', 'toroid', 'torusknot', 'twistedtorus', 'head'];
+            'teapot', 'tetrahedron', 'toroid', 'torusknot', 'twistedtorus', 'head',
+            'alfa147', 'airboat', 'minicooper', 'violin_case', 'trumpet'];
         title = "3D object : ";
     } else {
-        list_shapes = ['eagle_vessel', 'giletto_logo', 'lol_mdr_yo_hahaha', 'parke', 'charniere'];
+        list_shapes = ['eagle_vessel', 'giletto_logo', 'lol_mdr_yo_hahaha', 'parke', 'charniere', 'flute_notes'];
         title = "3D object modelized by Kids on Tinkercad : "
     }
 
