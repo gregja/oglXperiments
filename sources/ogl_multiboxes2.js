@@ -40,7 +40,7 @@ import { Renderer, Camera, Transform, Vec2, Program, Mesh, Box, Orbit, Raycast }
             document.body.appendChild(gl.canvas);
             gl.clearColor(1, 1, 1, 1);
 
-            const camera = new Camera(gl, { fov: 35 });
+            const camera = new Camera(gl, {fov: 35, near:1, far:1500});
             camera.position.set(0, 0, -40);
             camera.lookAt([0, 0, 0]);
             const controls = new Orbit(camera);

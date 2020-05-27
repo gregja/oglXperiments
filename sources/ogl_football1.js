@@ -3,7 +3,7 @@ import {Renderer, Camera, Transform, Texture, Program,  Mesh, Box, Sphere, Orbit
 {
 
     let info = document.getElementById('info');
-    info.innerHTML = "Frog - mapping the same image on sphere and cube" ;
+    info.innerHTML = "Mapping of the same image on sphere and cube" ;
 
     const starter = () => {
 
