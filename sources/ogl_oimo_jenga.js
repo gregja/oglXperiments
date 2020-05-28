@@ -150,11 +150,10 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit, Raycast, 
             mesh.setParent(scene);
 
             let oimo_params = {
-            //    type: 'box', // type of shape : sphere, box, cylinder
+                type: 'box',
                 size: size, // size of shape
                 pos: position, // start position in degree
                 rot: [0, 0, 0], // start rotation in degree
-               // world: world
                 density:1
             };
 
@@ -163,20 +162,13 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit, Raycast, 
             }
             oimo_params['move'] = false;
             let body = world.add(oimo_params);
-console.log(oimo_params);
+
             grounds.push({oimo: body, mesh:mesh});
         }
-/*
-        function clearMesh(){
-            var i = meshes.length;
-            while (i--) scene.remove(meshes[ i ]);
-            i = grounds.length;
-            while (i--) scene.remove(grounds[ i ]);
-            grounds = [];
-            meshes = [];
-        }
-*/
-        //add ground
+
+        world.clear();
+
+        //add grounds
         addStaticBox([400, 40, 400], [0,-20,0], [0,0,0], world, config);
         addStaticBox([200, 30, 390], [130,40,0], [0,0,32], world, config);
 
@@ -192,10 +184,6 @@ console.log(oimo_params);
         //type = 1;
         var type = 2;
 
-        // reset old
-       // clearMesh();
-        world.clear();
-        
         // now add object
         var x, y, z, w, h, d;
         var i = max;
@@ -285,7 +273,7 @@ console.log(oimo_params);
             controls.update();
 
             world.step();
-
+/*
             for (let i=meshes.length-1; i>-1; --i) {
                 let item = meshes[i];
 
@@ -308,7 +296,7 @@ console.log(oimo_params);
                 }
 
             }
-
+*/
             renderer.render({scene, camera});
         }
 
