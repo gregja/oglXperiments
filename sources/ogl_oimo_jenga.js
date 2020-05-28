@@ -273,21 +273,16 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit, Raycast, 
             controls.update();
 
             world.step();
-/*
+
             for (let i=meshes.length-1; i>-1; --i) {
                 let item = meshes[i];
 
                 let pos = item.oimo.getPosition();
-                item.mesh.position.x = pos.x;
-                item.mesh.position.y = pos.y;
-                item.mesh.position.z = pos.z;
+                item.mesh.position.set(pos.x, pos.y, pos.z);
 
-                let rot = item.oimo.getQuaternion();
-                item.mesh.rotation.x = rot.x;
-                item.mesh.rotation.y = rot.y;
-                item.mesh.rotation.z = rot.z;
+                let quat = item.oimo.getQuaternion();
+                item.mesh.quaternion.set(quat.x, quat.y, quat.z, quat.w);
 
-//                if (i<10) console.log(item.mesh.position, item.mesh.rotation);
                 if(item.mesh.position.y<-100){
                     let x = -100 + Math.random()*200;
                     let z = -100 + Math.random()*200;
@@ -296,7 +291,7 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit, Raycast, 
                 }
 
             }
-*/
+
             renderer.render({scene, camera});
         }
 

@@ -209,8 +209,8 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Sphere, Color, Orbit} f
                 let sphere = spheres[i];
                 let pos = sphere.oimo.getPosition();
                 sphere.mesh.position.set(pos.x, pos.y, pos.z);
-                let rot = sphere.oimo.getQuaternion();
-                sphere.mesh.rotation.set(rot.x, rot.y, rot.z, rot.w);
+                let quat = sphere.oimo.getQuaternion();
+                sphere.mesh.quaternion.set(quat.x, quat.y, quat.z, quat.w);
             }
 
             renderer.render({scene, camera});

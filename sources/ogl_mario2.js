@@ -209,8 +209,8 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit} from '../
                 let cube = cubes[i];
                 let pos = cube.oimo.getPosition();
                 cube.mesh.position.set(pos.x, pos.y, pos.z);
-                let rot = cube.oimo.getQuaternion();
-                cube.mesh.rotation.set(rot.x, rot.y, rot.z, rot.w);
+                let quat = cube.oimo.getQuaternion();
+                cube.mesh.quaternion.set(quat.x, quat.y, quat.z, quat.w);
             }
 
             renderer.render({scene, camera});

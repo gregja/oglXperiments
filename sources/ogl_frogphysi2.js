@@ -177,8 +177,8 @@ import {Renderer, Camera, Transform, Texture, Program,  Mesh, Box, Orbit} from '
 
                 let pos = oimoCube.getPosition();
                 boxMesh1.position.set(pos.x, pos.y, pos.z);
-                let rot = oimoCube.getQuaternion();
-                boxMesh1.rotation.set(rot.x, rot.y, rot.z, rot.w);
+                let quat = oimoCube.getQuaternion();
+                boxMesh1.quaternion.set(quat.x, quat.y, quat.z, quat.w);
 
                 renderer.render({scene, camera});
             }
