@@ -265,8 +265,14 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit, Sphere, C
 
                 let pos = item.oimo.getPosition();
                 item.mesh.position.set(pos.x, pos.y, pos.z);
-                let rot = item.oimo.getQuaternion();
-                item.mesh.rotation.set(rot.x, rot.y, rot.z, rot.w);
+
+                //  https://github.com/oframe/ogl/issues/71#issuecomment-635138816
+                // let rot = item.oimo.getQuaternion();
+                // item.mesh.rotation.set(rot.x, rot.y, rot.z, rot.w);
+                // => not good because the rotation property on Mesh or Transform is in Euler coordinates (XYZ)
+                // solution :
+                let quat = item.oimo.getQuaternion();
+                item.mesh.quaternion.set(quat.x, quat.y, quat.z, quat.w);
 
                 if (item.mesh.position.y < -200) {
                     let x = randomIntFromRange(-160, 160);
