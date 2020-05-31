@@ -4,7 +4,7 @@ import {vertex100, fragment100, vertex300, fragment300} from "../js/ogl_constant
 function letsgo() {
 
     let info1 = document.getElementById('info1');
-    info1.innerHTML = `<p>Constructive Solid Geometry (CSG) with <a href="http://evanw.github.io/csg.js/" target="_blank">csg.js</a></p>`;
+    info1.innerHTML = `<p>Constructive Solid Geometry (CSG) with the CSG component of <a href="https://en.wikibooks.org/wiki/OpenJSCAD_User_Guide" target="_blank">OpenJSCAD</a></p>`;;
     info1.innerHTML += `<pre>
 var a = CSG.cube({ center: [-0.5, -0.5, -0.5] });
 var b = CSG.sphere({ radius: 1.3, center: [0.5, 0.5, 0.5] });
