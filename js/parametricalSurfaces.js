@@ -1309,6 +1309,26 @@ var parametricalSurfaces = (function () {
         scale: DEFAULT_SCALE
     });
 
+    surface_types.push({
+        id: 75,
+        name: 'Möbius tube',
+        list: 1,
+        params: {A: 1.5, B: 3},
+    //    u: {begin: -2, end: 2, step: .04},
+    //    v: {begin: -2, end: 2, step: .04},
+        u: {begin: -PI, end: PI, step: 0.2},
+        v: {begin: -PI, end: PI, step: 0.2},
+        fxyz: (u, v) => {
+            u = u * 2;
+            let x = (1.0*A + 0.125*sin(u/2)*pow(abs(sin(v)), 2/B)*sign(sin(v)) + 0.5*cos(u/2)*pow(abs(cos(v)), 2/B)*sign(cos(v)))*cos(u);
+            let y = (1.0*A + 0.125*sin(u/2)*pow(abs(sin(v)), 2/B)*sign(sin(v)) + 0.5*cos(u/2)*pow(abs(cos(v)), 2/B)*sign(cos(v)))*sin(u);
+            let z = -0.5*sin(u/2)*pow(abs(cos(v)), 2/B)*sign(cos(v)) + 0.125*cos(u/2)*pow(abs(sin(v)), 2/B)*sign(sin(v));
+            return {x: x, y: y, z: z};
+        },
+        scale: DEFAULT_SCALE,
+        rotation: {x: TAU / 8}
+    })
+
     /**
      * Check if the source code of a parametric function is correct
      * @param fn

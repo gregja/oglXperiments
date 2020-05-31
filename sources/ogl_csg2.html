@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, minimal-ui, viewport-fit=cover, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <title>OGL - Constructive Solid Geometry (CSG)</title>
+    <link href="../css/ogl-main.css" rel="stylesheet">
+</head>
+<body>
+<div class="Info" style="width:50%">
+    <div id="info1"></div>
+    <form id="datas">
+        <label for="csgcode">Code editable :</label><br>
+        <textarea id="csgcode" style="background-color: #f1f1f1; border-radius: 3px;" rows="10" cols="100"></textarea>
+        </label><p id="warning" style="color:red;"></p>
+        <input type="submit" value="Submit" id="submit" style="border-radius: 3px;">
+    </form><br>
+    <p>Operations (example) : <pre style="display:inline;">a.intersect(b).subtract(c.union(d).union(e))</pre></p>
+    <p>Documentations : <a target="_blank" href="https://joostn.github.io/OpenJsCad/">joostn.github.io/OpenJsCad</a>,
+        &nbsp;<a target="_blank" href="http://evanw.github.io/csg.js/">evanw.github.io/csg.js</a>,
+        &nbsp;<a target="_blank" href="https://en.wikibooks.org/wiki/OpenJSCAD_User_Guide">OpenJSCAD wikibook</a></p>
+    <p>Warning : some shapes with extrusions are not well rendered in that intermediate version (work in progress)</p>
+    <p>Use the mouse wheel for zooming</p>
+</div><br>
+<div id="canvas"></div>
+<script src="../js/csg.js"></script>
+<script type="module" src="ogl_csg2.js"></script>
+</body>
+</html>
