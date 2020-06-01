@@ -82,6 +82,7 @@ function letsgo () {
         positions = [];
         normals = [];
         uvs = [];
+        /*
         current3Dobject.polygons.forEach(items => {
             let last = null;
             items.vertices.forEach((vertex, idx) => {
@@ -106,6 +107,36 @@ function letsgo () {
                 normals.push(last.normal.z);
             }
         });
+         */
+
+        // voir aussi : CSG.prototype.toStlBinary  (dans csg.js)
+        current3Dobject.fixTJunctions();
+        current3Dobject.polygons.map(function(p) {
+           var numvertices = p.vertices.length;
+           for (var i = 0; i < numvertices - 2; i++) {
+               var normal = p.plane.normal;
+               normals.push(normal._x);
+               normals.push(normal._y);
+               normals.push(normal._z);
+               positions.push(normal._x);
+               positions.push(normal._y);
+               positions.push(normal._z);
+               //var arindex = 3;
+               for (var v = 0; v < 3; v++) {
+                   var vv = v + ((v > 0) ? i : 0);
+                   var vertexpos = p.vertices[vv].pos;
+//                   normals.push(vertexpos._x);
+//                   normals.push(vertexpos._y);
+//                   normals.push(vertexpos._z);
+                   positions.push(vertexpos._x);
+                   positions.push(vertexpos._y);
+                   positions.push(vertexpos._z);
+               }
+           }
+
+        });
+
+
     }
 
     submit.addEventListener("click",(evt)=>{
@@ -126,7 +157,7 @@ function letsgo () {
             if (mesh != undefined) {
                 scene.removeChild(mesh);
             }
-            mesh = new Mesh(gl, {mode: gl.TRIANGLE_STRIP, geometry, program});
+            mesh = new Mesh(gl, {mode: gl.TRIANGLE_FAN, geometry, program});
             mesh.setParent(scene);
         }
     }, false);
