@@ -2,6 +2,7 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Orbit, Ve
 import {vertex100, fragment100, vertex300, fragment300} from "../js/ogl_constants.js";
 import {CsgLibrary} from "../js/csg_library.js";
 import {CSG} from "../js/csg.js";
+import {generateOutputFileBlobUrl, generateCSG} from "../js/csg_tools.js";
 
 function letsgo () {
 
@@ -9,6 +10,7 @@ function letsgo () {
     info1.innerHTML = `<h3>Constructive Solid Geometry (CSG) with the CSG component of <a href="https://en.wikibooks.org/wiki/OpenJSCAD_User_Guide" target="_blank">OpenJSCAD</a></h3>`;;
 
     let current_code = CsgLibrary.basic_1.code;
+    let current3Dobject;
 
     let positions = [];
     let normals = [];
@@ -21,6 +23,24 @@ function letsgo () {
     let warning = document.getElementById('warning');
     let submit = document.getElementById('submit');
 
+    let export_area = document.getElementById('export');
+
+    let downloadLink = document.getElementById('export_link');
+    if (downloadLink == undefined) {
+        console.warn('Export not possible because the hidden download link is missing');
+    } else {
+        let export_button_stl = document.createElement('button');
+        export_button_stl.style.border = "2px solid #e7e7e7";
+        export_button_stl.style.borderRadius = "3px";
+        export_button_stl.style.padding = "3px 4px";
+
+        export_button_stl.innerHTML = '&nbsp;Generate STL&nbsp;';
+        export_area.appendChild(export_button_stl);
+        export_button_stl.addEventListener('click', (evt)=>{
+            generateOutputFileBlobUrl(current3Dobject, downloadLink, 'stl' )
+        }, false);
+    }
+
     let canvas_area =  document.getElementById('canvas');
     const renderer = new Renderer({dpr: 2});
     const gl = renderer.gl;
@@ -28,9 +48,6 @@ function letsgo () {
     gl.canvas.style.position = "relative";
     gl.clearColor(1, 1, 1, 1);
 
-//    const camera = new Camera(gl, {fov: 35});
-//    camera.position.set(8, 5, 15);
-//    camera.lookAt([0, 1.5, 0]);
     const camera = new Camera(gl, {fov: 40, near:1, far:1500});
     camera.position.set(0, 0, -10);
     camera.lookAt([0, 0, 0]);
@@ -58,42 +75,11 @@ function letsgo () {
         cullFace: null,
     });
 
-    // generate shape
-    function generate_shape() {
-        let usercode = String(textarea.value).trim();
-        let fnc_code;
-        // bind the user code in the "fnc_code" function to avoid pollution of the current scope
-        let binded_code = `fnc_code = ()=> {
-        "use strict";
-        let final = null;
-        ${usercode}  
-        return final;
-        }
-        fnc_code();
-        `;
-
-        warning.innerHTML = '';
-
-        try {
-            let res = eval(binded_code);
-            if (res == undefined || res == null) {
-                warning.innerHTML = "You must always finish your code with the predefined variable 'final' like on that example : <pre>final = your_last_var;</pre> ";
-                return null;
-            }
-            return res;
-        } catch(error) {
-            console.warn(error);
-            console.log(binded_code);
-            warning.innerHTML = error;
-            return null;
-        }
-    }
-
     function csgshape() {
         positions = [];
         normals = [];
         uvs = [];
-        final.polygons.forEach(items => {
+        current3Dobject.polygons.forEach(items => {
             let last = null;
             items.vertices.forEach((vertex, idx) => {
                 if (idx == 0) {
@@ -121,9 +107,8 @@ function letsgo () {
 
     submit.addEventListener("click",(evt)=>{
         evt.preventDefault();
-        let res = generate_shape();
-        if (res != null) {
-            final = res;
+        current3Dobject = generateCSG(CSG, textarea.value, null, warning);
+        if (current3Dobject != null) {
             csgshape();
             geometry = new Geometry(gl, {
                 position: {size: 3, data: new Float32Array(positions)},
