@@ -1,21 +1,12 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Orbit, Vec3} from '../js/ogl/ogl.js';
 import {vertex100, fragment100, vertex300, fragment300} from "../js/ogl_constants.js";
 import {CsgLibrary} from "../js/csg_library.js";
+import {CSG} from "../js/csg.js";
 
 function letsgo () {
-    /*
-        var a = CSG.cube();
-        var b = CSG.sphere({ radius: 1.35, stacks: 12 });
-        var c = CSG.cylinder({ radius: 0.7, start: [-1, 0, 0], end: [1, 0, 0] });
-        var d = CSG.cylinder({ radius: 0.7, start: [0, -1, 0], end: [0, 1, 0] });
-        var e = CSG.cylinder({ radius: 0.7, start: [0, 0, -1], end: [0, 0, 1] });
-        var final = a.intersect(b).subtract(c.union(d).union(e));
-    */
-    // var final = CSG.fromPolygons(c.polygons);
-    // final.toMesh();
 
     let info1 = document.getElementById('info1');
-    info1.innerHTML = `<p>Constructive Solid Geometry (CSG) with the CSG component of <a href="https://en.wikibooks.org/wiki/OpenJSCAD_User_Guide" target="_blank">OpenJSCAD</a></p>`;;
+    info1.innerHTML = `<h3>Constructive Solid Geometry (CSG) with the CSG component of <a href="https://en.wikibooks.org/wiki/OpenJSCAD_User_Guide" target="_blank">OpenJSCAD</a></h3>`;;
 
     let current_code = CsgLibrary.basic_1.code;
 
@@ -69,21 +60,30 @@ function letsgo () {
 
     // generate shape
     function generate_shape() {
-        let code = textarea.value;
-        console.log(code);
+        let usercode = String(textarea.value).trim();
+        let fnc_code;
+        // bind the user code in the "fnc_code" function to avoid pollution of the current scope
+        let binded_code = `fnc_code = ()=> {
+        "use strict";
+        let final = null;
+        ${usercode}  
+        return final;
+        }
+        fnc_code();
+        `;
 
         warning.innerHTML = '';
 
         try {
-            let res = eval(code);
-            console.log(res);
-            if (res == undefined) {
-                warning.innerHTML = "always finih code with 'final' not prefixed by 'var' like that : <pre>final = ...</pre> ";
+            let res = eval(binded_code);
+            if (res == undefined || res == null) {
+                warning.innerHTML = "You must always finish your code with the predefined variable 'final' like on that example : <pre>final = your_last_var;</pre> ";
                 return null;
             }
             return res;
         } catch(error) {
             console.warn(error);
+            console.log(binded_code);
             warning.innerHTML = error;
             return null;
         }

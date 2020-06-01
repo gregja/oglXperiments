@@ -1,21 +1,22 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Orbit, Vec3} from '../js/ogl/ogl.js';
 import {vertex100, fragment100, vertex300, fragment300} from "../js/ogl_constants.js";
+import {CSG} from "../js/csg.js";
 
 function letsgo() {
 
     let info1 = document.getElementById('info1');
-    info1.innerHTML = `<p>Constructive Solid Geometry (CSG) with the CSG component of <a href="https://en.wikibooks.org/wiki/OpenJSCAD_User_Guide" target="_blank">OpenJSCAD</a></p>`;;
+    info1.innerHTML = `<h3>Constructive Solid Geometry (CSG) with the CSG component of <a href="https://en.wikibooks.org/wiki/OpenJSCAD_User_Guide" target="_blank">OpenJSCAD</a></h3>`;;
     info1.innerHTML += `<pre>
 var a = CSG.cube({ center: [-0.5, -0.5, -0.5] });
 var b = CSG.sphere({ radius: 1.3, center: [0.5, 0.5, 0.5] });
-
-keys : 
+</pre>
+<h4>Keys :</h4><pre> 
 a => only a
 b => only b
 c => a.union(b)
 d => a.subtract(b)
-e => a.intersect(b)
-</pre>`;
+e => a.intersect(b)</pre>
+`;
 
     let info2 =  document.getElementById('info2');
     info2.innerHTML = 'Current : a.union(b)';
@@ -58,8 +59,6 @@ e => a.intersect(b)
     let a = CSG.cube({ center: [-0.5, -0.5, -0.5] });
     let b = CSG.sphere({ radius: 1.3, center: [0.5, 0.5, 0.5] });
     let final = a.union(b);
-   // var final = CSG.fromPolygons(c.polygons);
-   // final.toMesh();
 
     let positions = [];
     let normals = [];
@@ -117,7 +116,7 @@ e => a.intersect(b)
         // Documentation about keyboard events :
         //    https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key
         if (e.key == 'a' || e.key == 'A') {
-            info2.innerHTML = 'Current : only a';
+            info2.innerHTML = 'Current key: "a" => only a';
             final = a;
             csgshape();
             geometry = new Geometry(gl, {
@@ -130,7 +129,7 @@ e => a.intersect(b)
             mesh.setParent(scene);
         }
         if (e.key == 'b' || e.key == 'B') {
-            info2.innerHTML = 'Current : only b';
+            info2.innerHTML = 'Current key: "b" => only b';
             final = b;
             csgshape();
             geometry = new Geometry(gl, {
@@ -143,7 +142,7 @@ e => a.intersect(b)
             mesh.setParent(scene);
         }
         if (e.key == 'c' || e.key == 'C') {
-            info2.innerHTML = 'Current : a.union(b)';
+            info2.innerHTML = 'Current key: "c" => a.union(b)';
             final = a.union(b);
             csgshape();
             geometry = new Geometry(gl, {
@@ -156,7 +155,7 @@ e => a.intersect(b)
             mesh.setParent(scene);
         }
         if (e.key == 'd' || e.key == 'D') {
-            info2.innerHTML = 'Current : a.subtract(b)';
+            info2.innerHTML = 'Current key: "d" => a.subtract(b)';
             final = a.subtract(b);
             csgshape();
             geometry = new Geometry(gl, {
@@ -169,7 +168,7 @@ e => a.intersect(b)
             mesh.setParent(scene);
         }
         if (e.key == 'e' || e.key == 'E') {
-            info2.innerHTML = 'Current : a.intersect(b)';
+            info2.innerHTML = 'Current key: "e" => a.intersect(b)';
             final = a.intersect(b);
             csgshape();
             geometry = new Geometry(gl, {
