@@ -1,3 +1,7 @@
+/*
+   Gear generator : largely inspired by this example : https://joostn.github.io/OpenJsCad/
+ */
+
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Orbit, Vec3} from '../js/ogl/ogl.js';
 import {vertex100, fragment100, vertex300, fragment300, render_modes} from "../js/ogl_constants.js";
 import {CsgLibrary} from "../js/csg_library.js";
@@ -6,23 +10,25 @@ import {generateOutputFileBlobUrl, generateCSG, generateTableForm} from "../js/c
 
 function letsgo () {
 
+    const fan_preferred = false; // shape better rendered with false, set to true for an experimental rendering (good for TRIANGLE_FAN mode)
+
     let settings = {
-        rendering: 'TRIANGLE_FAN',  // better rendering mode for gear shape
-        isRotating: false
+        rendering: 'TRIANGLES',
+        isRotating: false,
     };
 
     let info1 = document.getElementById('info1');
     info1.innerHTML = `<h3>Constructive Solid Geometry (CSG) with the CSG component of <a href="https://en.wikibooks.org/wiki/OpenJSCAD_User_Guide" target="_blank">OpenJSCAD</a></h3>`;;
 
     let externalShape = CsgLibrary.gear_01;
-    let current_code = externalShape.code;
+
     let current3Dobject;
     let data_dictionary = generateTableForm('gearparams', externalShape.params);
 
     let positions = [];
     let normals = [];
     let uvs = [];
-    let final;
+
     let geometry, mesh;
 
     //let warning = document.getElementById('warning');
@@ -87,52 +93,33 @@ function letsgo () {
         positions = [];
         normals = [];
         uvs = [];
-        /*
-        current3Dobject.polygons.forEach(items => {
-            let last = null;
-            items.vertices.forEach((vertex, idx) => {
-                if (idx == 0) {
-                    last = vertex;
-                }
-                positions.push(vertex.pos.x);
-                positions.push(vertex.pos.y);
-                positions.push(vertex.pos.z);
-                if (vertex.normal) {
-                    normals.push(vertex.normal.x);
-                    normals.push(vertex.normal.y);
-                    normals.push(vertex.normal.z);
-                }
-            });
-            positions.push(last.pos.x);
-            positions.push(last.pos.y);
-            positions.push(last.pos.z);
-            if (last.normal) {
-                normals.push(last.normal.x);
-                normals.push(last.normal.y);
-                normals.push(last.normal.z);
-            }
-        });
-         */
 
         // voir aussi : CSG.prototype.toStlBinary  (dans csg.js)
         current3Dobject.fixTJunctions();
-        current3Dobject.polygons.map(function(p) {
-           var numvertices = p.vertices.length;
-           for (var i = 0; i < numvertices - 2; i++) {
-               var normal = p.plane.normal;
-               normals.push(normal._x);
-               normals.push(normal._y);
-               normals.push(normal._z);
-               positions.push(normal._x);
-               positions.push(normal._y);
-               positions.push(normal._z);
-               //var arindex = 3;
-               for (var v = 0; v < 3; v++) {
-                   var vv = v + ((v > 0) ? i : 0);
-                   var vertexpos = p.vertices[vv].pos;
-//                   normals.push(vertexpos._x);
-//                   normals.push(vertexpos._y);
-//                   normals.push(vertexpos._z);
+        current3Dobject.polygons.forEach((p) => {
+           let numvertices = p.vertices.length;
+           for (let i = 0; i < numvertices - 2; i++) {
+
+               if (fan_preferred) {
+                   let normal = p.plane.normal;
+                   normals.push(normal._x);
+                   normals.push(normal._y);
+                   normals.push(normal._z);
+                   positions.push(normal._x);
+                   positions.push(normal._y);
+                   positions.push(normal._z);
+               }
+
+               for (let v = 0; v < 3; v++) {
+                   let vv = v + ((v > 0) ? i : 0);
+                   let vertexpos = p.vertices[vv].pos;
+
+                   if (fan_preferred) {
+                       normals.push(vertexpos._x);
+                       normals.push(vertexpos._y);
+                       normals.push(vertexpos._z);
+                   }
+
                    positions.push(vertexpos._x);
                    positions.push(vertexpos._y);
                    positions.push(vertexpos._z);
@@ -144,7 +131,6 @@ function letsgo () {
     }
 
     const addGui = (obj) => {
-        console.log(obj);
         let gui = new dat.gui.GUI();
 
         let guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();  // none by default

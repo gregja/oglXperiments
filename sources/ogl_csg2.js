@@ -18,9 +18,8 @@ function letsgo () {
     let current3Dobject;
 
     let positions = [];
-    let normals = [];
-    let uvs = [];
-    let final;
+    //let normals = [];
+    //let uvs = [];
     let geometry, mesh;
 
     let textarea = document.getElementById('csgcode');
@@ -82,53 +81,18 @@ function letsgo () {
 
     function csgshape() {
         positions = [];
-        normals = [];
-        uvs = [];
-        /*
-        current3Dobject.polygons.forEach(items => {
-            let last = null;
-            items.vertices.forEach((vertex, idx) => {
-                if (idx == 0) {
-                    last = vertex;
-                }
-                positions.push(vertex.pos.x);
-                positions.push(vertex.pos.y);
-                positions.push(vertex.pos.z);
-                if (vertex.normal) {
-                    normals.push(vertex.normal.x);
-                    normals.push(vertex.normal.y);
-                    normals.push(vertex.normal.z);
-                }
-            });
-            positions.push(last.pos.x);
-            positions.push(last.pos.y);
-            positions.push(last.pos.z);
-            if (last.normal) {
-                normals.push(last.normal.x);
-                normals.push(last.normal.y);
-                normals.push(last.normal.z);
-            }
-        });
+        //normals = [];
+        //uvs = [];
 
-         */
         current3Dobject.fixTJunctions();
-        current3Dobject.polygons.map(function(p) {
-            var numvertices = p.vertices.length;
-            for (var i = 0; i < numvertices - 2; i++) {
-                var normal = p.plane.normal;
-                normals.push(normal._x);
-                normals.push(normal._y);
-                normals.push(normal._z);
-                positions.push(normal._x);
-                positions.push(normal._y);
-                positions.push(normal._z);
-                //var arindex = 3;
-                for (var v = 0; v < 3; v++) {
-                    var vv = v + ((v > 0) ? i : 0);
-                    var vertexpos = p.vertices[vv].pos;
-//                   normals.push(vertexpos._x);
-//                   normals.push(vertexpos._y);
-//                   normals.push(vertexpos._z);
+        current3Dobject.polygons.forEach((p) => {
+            let numvertices = p.vertices.length;
+            for (let i = 0; i < numvertices - 2; i++) {
+
+                for (let v = 0; v < 3; v++) {
+                    let vv = v + ((v > 0) ? i : 0);
+                    let vertexpos = p.vertices[vv].pos;
+
                     positions.push(vertexpos._x);
                     positions.push(vertexpos._y);
                     positions.push(vertexpos._z);
@@ -146,7 +110,7 @@ function letsgo () {
             geometry = new Geometry(gl, {
                 position: {size: 3, data: new Float32Array(positions)},
                 //uv: {size: 2, data: new Float32Array(uvs)},
-                normal: {size: 3, data: new Float32Array(normals)},
+                //normal: {size: 3, data: new Float32Array(normals)},
             });
             if (mesh != undefined) {
                 scene.removeChild(mesh);
@@ -160,7 +124,6 @@ function letsgo () {
     submit.click();
 
     const addGui = (obj) => {
-        console.log(obj);
         let gui = new dat.gui.GUI();
 
         let guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();  // none by default

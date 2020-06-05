@@ -66,49 +66,46 @@ e => a.intersect(b)</pre>
     let final = a.union(b);
 
     let positions = [];
-    let normals = [];
-    let uvs = [];
+    //let normals = [];
+    //let uvs = [];
 
     function csgshape() {
         positions = [];
-        normals = [];
-        uvs = [];
-        final.polygons.forEach(items => {
-            let last = null;
-            items.vertices.forEach((vertex, idx) => {
-                if (idx == 0) {
-                    last = vertex;
+        //normals = [];
+        //uvs = [];
+
+        final.polygons.forEach((p) => {
+            let numvertices = p.vertices.length;
+            for (let i = 0; i < numvertices - 2; i++) {
+
+                for (let v = 0; v < 3; v++) {
+                    let vv = v + ((v > 0) ? i : 0);
+                    let vertexpos = p.vertices[vv].pos;
+
+                    positions.push(vertexpos._x);
+                    positions.push(vertexpos._y);
+                    positions.push(vertexpos._z);
                 }
-                positions.push(vertex.pos.x);
-                positions.push(vertex.pos.y);
-                positions.push(vertex.pos.z);
-                if (vertex.normal) {
-                    normals.push(vertex.normal.x);
-                    normals.push(vertex.normal.y);
-                    normals.push(vertex.normal.z);
-                }
-            });
-            positions.push(last.pos.x);
-            positions.push(last.pos.y);
-            positions.push(last.pos.z);
-            if (last.normal) {
-                normals.push(last.normal.x);
-                normals.push(last.normal.y);
-                normals.push(last.normal.z);
             }
+
         });
     }
 
-    csgshape();
+    function regenerateShape() {
+        csgshape();
+        geometry = new Geometry(gl, {
+            position: {size: 3, data: new Float32Array(positions)},
+            //uv: {size: 2, data: new Float32Array(uvs)},
+            //normal: {size: 3, data: new Float32Array(normals)},
+        });
+        if (mesh != undefined) {
+            scene.removeChild(mesh);
+        }
+        mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
+        mesh.setParent(scene);
+    }
 
-    geometry = new Geometry(gl, {
-        position: {size: 3, data: new Float32Array(positions)},
-        //uv: {size: 2, data: new Float32Array(uvs)},
-        normal: {size: 3, data: new Float32Array(normals)},
-    });
-
-    mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
-    mesh.setParent(scene);
+    regenerateShape();
 
     /*
     a => only a
@@ -123,67 +120,27 @@ e => a.intersect(b)</pre>
         if (e.key == 'a' || e.key == 'A') {
             info2.innerHTML = 'Current key: "a" => only a';
             final = a;
-            csgshape();
-            geometry = new Geometry(gl, {
-                position: {size: 3, data: new Float32Array(positions)},
-                //uv: {size: 2, data: new Float32Array(uvs)},
-                normal: {size: 3, data: new Float32Array(normals)},
-            });
-            scene.removeChild(mesh);
-            mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
-            mesh.setParent(scene);
+            regenerateShape();
         }
         if (e.key == 'b' || e.key == 'B') {
             info2.innerHTML = 'Current key: "b" => only b';
             final = b;
-            csgshape();
-            geometry = new Geometry(gl, {
-                position: {size: 3, data: new Float32Array(positions)},
-                //uv: {size: 2, data: new Float32Array(uvs)},
-                normal: {size: 3, data: new Float32Array(normals)},
-            });
-            scene.removeChild(mesh);
-            mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
-            mesh.setParent(scene);
+            regenerateShape();
         }
         if (e.key == 'c' || e.key == 'C') {
             info2.innerHTML = 'Current key: "c" => a.union(b)';
             final = a.union(b);
-            csgshape();
-            geometry = new Geometry(gl, {
-                position: {size: 3, data: new Float32Array(positions)},
-                //uv: {size: 2, data: new Float32Array(uvs)},
-                normal: {size: 3, data: new Float32Array(normals)},
-            });
-            scene.removeChild(mesh);
-            mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
-            mesh.setParent(scene);
+            regenerateShape();
         }
         if (e.key == 'd' || e.key == 'D') {
             info2.innerHTML = 'Current key: "d" => a.subtract(b)';
             final = a.subtract(b);
-            csgshape();
-            geometry = new Geometry(gl, {
-                position: {size: 3, data: new Float32Array(positions)},
-                //uv: {size: 2, data: new Float32Array(uvs)},
-                normal: {size: 3, data: new Float32Array(normals)},
-            });
-            scene.removeChild(mesh);
-            mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
-            mesh.setParent(scene);
+            regenerateShape();
         }
         if (e.key == 'e' || e.key == 'E') {
             info2.innerHTML = 'Current key: "e" => a.intersect(b)';
             final = a.intersect(b);
-            csgshape();
-            geometry = new Geometry(gl, {
-                position: {size: 3, data: new Float32Array(positions)},
-                //uv: {size: 2, data: new Float32Array(uvs)},
-                normal: {size: 3, data: new Float32Array(normals)},
-            });
-            scene.removeChild(mesh);
-            mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
-            mesh.setParent(scene);
+            regenerateShape();
         }
 
     }
@@ -191,7 +148,6 @@ e => a.intersect(b)</pre>
     document.addEventListener('keydown', keyPressed, false);
 
     const addGui = (obj) => {
-        console.log(obj);
         let gui = new dat.gui.GUI();
 
         let guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();  // none by default
