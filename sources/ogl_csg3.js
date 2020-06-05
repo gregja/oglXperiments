@@ -1,10 +1,15 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Orbit, Vec3} from '../js/ogl/ogl.js';
-import {vertex100, fragment100, vertex300, fragment300} from "../js/ogl_constants.js";
+import {vertex100, fragment100, vertex300, fragment300, render_modes} from "../js/ogl_constants.js";
 import {CsgLibrary} from "../js/csg_library.js";
 import {CSG} from "../js/csg.js";
 import {generateOutputFileBlobUrl, generateCSG, generateTableForm} from "../js/csg_tools.js";
 
 function letsgo () {
+
+    let settings = {
+        rendering: 'TRIANGLE_FAN',  // better rendering mode for gear shape
+        isRotating: false
+    };
 
     let info1 = document.getElementById('info1');
     info1.innerHTML = `<h3>Constructive Solid Geometry (CSG) with the CSG component of <a href="https://en.wikibooks.org/wiki/OpenJSCAD_User_Guide" target="_blank">OpenJSCAD</a></h3>`;;
@@ -136,8 +141,29 @@ function letsgo () {
 
         });
 
-
     }
+
+    const addGui = (obj) => {
+        console.log(obj);
+        let gui = new dat.gui.GUI();
+
+        let guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();  // none by default
+        guiRndrMode.onChange(function(value){
+            obj.rendering = value;
+            if (mesh != undefined) {
+                scene.removeChild(mesh);
+            }
+            mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
+            mesh.setParent(scene);
+        });
+
+        let gui_spinning = gui.add(obj, 'isRotating').listen();
+        gui_spinning.onChange(function(value){
+            obj.isRotating = Boolean(value);
+        });
+
+    };
+    addGui(settings);
 
     submit.addEventListener("click",(evt)=>{
         evt.preventDefault();
@@ -157,7 +183,7 @@ function letsgo () {
             if (mesh != undefined) {
                 scene.removeChild(mesh);
             }
-            mesh = new Mesh(gl, {mode: gl.TRIANGLE_FAN, geometry, program});
+            mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
             mesh.setParent(scene);
         }
     }, false);
@@ -168,7 +194,7 @@ function letsgo () {
     function update() {
         requestAnimationFrame(update);
         controls.update();
-      //  if (mesh) mesh.rotation.y -= 0.005;
+        if (settings.isRotating) mesh.rotation.y -= 0.005;
         renderer.render({scene, camera});
     }
     requestAnimationFrame(update);

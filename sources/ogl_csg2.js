@@ -1,5 +1,5 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Orbit, Vec3} from '../js/ogl/ogl.js';
-import {vertex100, fragment100, vertex300, fragment300} from "../js/ogl_constants.js";
+import {vertex100, fragment100, vertex300, fragment300, render_modes} from "../js/ogl_constants.js";
 import {CsgLibrary} from "../js/csg_library.js";
 import {CSG} from "../js/csg.js";
 import {generateOutputFileBlobUrl, generateCSG} from "../js/csg_tools.js";
@@ -8,6 +8,11 @@ function letsgo () {
 
     let info1 = document.getElementById('info1');
     info1.innerHTML = `<h3>Constructive Solid Geometry (CSG) with the CSG component of <a href="https://en.wikibooks.org/wiki/OpenJSCAD_User_Guide" target="_blank">OpenJSCAD</a></h3>`;;
+
+    let settings = {
+        rendering: 'TRIANGLE_STRIP',
+        isRotating: false
+    };
 
     let current_code = CsgLibrary.basic_1.code;
     let current3Dobject;
@@ -79,6 +84,7 @@ function letsgo () {
         positions = [];
         normals = [];
         uvs = [];
+        /*
         current3Dobject.polygons.forEach(items => {
             let last = null;
             items.vertices.forEach((vertex, idx) => {
@@ -103,6 +109,33 @@ function letsgo () {
                 normals.push(last.normal.z);
             }
         });
+
+         */
+        current3Dobject.fixTJunctions();
+        current3Dobject.polygons.map(function(p) {
+            var numvertices = p.vertices.length;
+            for (var i = 0; i < numvertices - 2; i++) {
+                var normal = p.plane.normal;
+                normals.push(normal._x);
+                normals.push(normal._y);
+                normals.push(normal._z);
+                positions.push(normal._x);
+                positions.push(normal._y);
+                positions.push(normal._z);
+                //var arindex = 3;
+                for (var v = 0; v < 3; v++) {
+                    var vv = v + ((v > 0) ? i : 0);
+                    var vertexpos = p.vertices[vv].pos;
+//                   normals.push(vertexpos._x);
+//                   normals.push(vertexpos._y);
+//                   normals.push(vertexpos._z);
+                    positions.push(vertexpos._x);
+                    positions.push(vertexpos._y);
+                    positions.push(vertexpos._z);
+                }
+            }
+
+        });
     }
 
     submit.addEventListener("click",(evt)=>{
@@ -118,7 +151,7 @@ function letsgo () {
             if (mesh != undefined) {
                 scene.removeChild(mesh);
             }
-            mesh = new Mesh(gl, {mode: gl.TRIANGLE_STRIP, geometry, program});
+            mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
             mesh.setParent(scene);
         }
     }, false);
@@ -126,10 +159,32 @@ function letsgo () {
     // generate first shape
     submit.click();
 
+    const addGui = (obj) => {
+        console.log(obj);
+        let gui = new dat.gui.GUI();
+
+        let guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();  // none by default
+        guiRndrMode.onChange(function(value){
+            obj.rendering = value;
+            if (mesh != undefined) {
+                scene.removeChild(mesh);
+            }
+            mesh = new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
+            mesh.setParent(scene);
+        });
+
+        let gui_spinning = gui.add(obj, 'isRotating').listen();
+        gui_spinning.onChange(function(value){
+            obj.isRotating = Boolean(value);
+        });
+
+    };
+    addGui(settings);
+
     function update() {
         requestAnimationFrame(update);
         controls.update();
-      //  if (mesh) mesh.rotation.y -= 0.005;
+        if (settings.isRotating) mesh.rotation.y -= 0.005;
         renderer.render({scene, camera});
     }
     requestAnimationFrame(update);
