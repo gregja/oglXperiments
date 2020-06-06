@@ -366,8 +366,8 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
             if (response.ok) {
                 response.text().then(function (content) {
                     const datas = JSON.parse(content);
-                    //console.log(datas.vertices.length);
-                    //console.log(datas.faces.length);
+                    //console.log('count vertices =>', datas.vertices.length);
+                    //console.log('count faces =>', datas.faces.length);
 
                     let points = makeVertices(datas.vertices);
                     let morphings = datas.morphTargets.map(item => makeVertices(item.vertices));

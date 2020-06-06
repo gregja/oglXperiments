@@ -203,9 +203,9 @@ import {Renderer, Camera, Transform, Program, Mesh, Box, Color, Orbit, Raycast, 
                 cubes.push({oimo: oimoCube, mesh:cube});
             }
         }
-console.log(ymax);
+
         let ymax2 = ymax-(side+side/2) - .1;
-        console.log(ymax2);
+
         const groundGeometry = new Box(gl, {width: shapes.ground.side.x, height: shapes.ground.side.y, depth: shapes.ground.side.z});
         let meshGround = new Mesh(gl, {geometry: groundGeometry, program: groundProgram});
         meshGround.position.set(shapes.ground.pos.x, ymax2, shapes.ground.pos.z);

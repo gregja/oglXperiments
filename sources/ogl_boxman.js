@@ -328,7 +328,6 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
             let angleRightElbow = degToRad(sin(cycle) * 21);
             let angleLeftShoulder = degToRad(sin(cycle + PI) * 10);
             let angleLeftElbow = degToRad(sin(cycle + PI) * 21);
-     //       console.log(cycle, angle3a);
 
          //   if (angle3a < -1) angle3a = -1;
             skel.LeftShoulder.rotation.x = angleLeftShoulder;
@@ -363,7 +362,6 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     };
 
     const addGui = (obj) => {
-        console.log(obj);
         let gui = new dat.gui.GUI();
 
         let guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();  // none by default

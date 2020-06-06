@@ -143,12 +143,10 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
                 rightJoint = childLvl1;
             }
             level1.children.forEach(level2 => {
-                //console.log(level2)
                 let geometry = new Box(gl, {width: level2.scale[0], height: level2.scale[1], depth: level2.scale[2]});
                 let childLvl2 =  new Mesh(gl, {mode: gl[settings.rendering], geometry, program});
                 childLvl2.position.set(level2.position[0], level2.position[1], level2.position[2]);
                 childLvl2.rotation.set(level2.rotation[0], level2.rotation[1], level2.rotation[2]);
-                //childLvl2.setParent(childLvl1);
                 childLvl1.addChild(childLvl2);
             });
         });
@@ -228,8 +226,6 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
             book.rotation.y = sin(degToRad(settings.ang2)) * 50;
             book.rotation.z = sin(degToRad(settings.ang2)) * 65;
 
-            //let roty = sin(degToRad(settings.ang1)) * -20;
-            //console.log(leftWing.rotation.y, settings, roty)
             leftJoint.rotation.y += (sin(degToRad(settings.ang1)) * -20) / 10;
             rightJoint.rotation.y += (sin(degToRad(settings.ang1)) * 20) / 10;
 
@@ -245,7 +241,6 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
             settings.ang2 += 0.01;
             settings.ang3 += 2.0;
             settings.ang4 += 0.75;
-
         }
 
         renderer.render({scene, camera});

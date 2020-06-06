@@ -143,7 +143,6 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
         // Choose from accepted values
         let guiSurfList = gui.add(obj, 'name', shapes3DList, obj.name).listen();
         guiSurfList.onChange(function(value){
-            console.log('mouchard ', value);
             obj.name = value;
             shapeGenerator();
         });

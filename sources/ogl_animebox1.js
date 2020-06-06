@@ -59,7 +59,7 @@ import { Renderer, Camera, Transform, Program, Mesh, Box, Orbit } from '../js/og
                 //duration: 700,
                 //elasticity: 500,
                 update: function() {
-                    console.log(battery);
+                    console.log('anime.update() =>', battery);
                 }
             });
 

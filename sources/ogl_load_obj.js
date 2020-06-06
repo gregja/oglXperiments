@@ -3,7 +3,7 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
 {
     const getRandomInt = (max) => Math.floor(Math.random() * Math.floor(max));
     var list_ref = String(window.location.href).split('?')[1].split('=');
-    console.log(list_ref);
+
     let info = document.getElementById('info');
     var list_shapes = [];
     var title = '';
@@ -42,15 +42,7 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
             center: true
         }, function(newshape){
             let xportMesh = [];
-            /*
-            obj3d.polygons.forEach((vertices, idx) => {
-                let shape = [];
-                vertices.forEach(item => {
-                    shape.push(obj3d.points[item]);
-                });
-            });
-            */
-            console.log(newshape);
+
             newshape.polygons.forEach(polygons => {
 
                 polygons.forEach(poly => {
@@ -60,7 +52,7 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
                     xportMesh.push(point.z/divider);
                 })
             });
-//console.log(xportMesh);
+
             geometry = new Geometry(gl, {
                 position: {size: 3, data: new Float32Array(xportMesh)}
             });

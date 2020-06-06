@@ -40,7 +40,7 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
         var shape_params = {x:0, y:0, z:0, r:1, level:1, maxLevel:maxLevel };
         var blocks = generateShape(shape_params);
         let imax = blocks.length;
-        console.log('Number of blocks to generate : '+imax);
+        console.log('Counting of blocks to generate : '+imax);
 
         if (tasks.length > 0) {
             // stop remanining tasks before initializing a new series of tasks

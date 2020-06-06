@@ -80,7 +80,6 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
         const img = new Image();
         img.onload = () => texture.image = img;
         let tpath = '../assets/' + extract_value(settings.texture);
-        console.log(tpath);
         img.src = tpath;
     }
 

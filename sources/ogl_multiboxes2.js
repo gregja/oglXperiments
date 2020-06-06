@@ -129,7 +129,6 @@ import { Renderer, Camera, Transform, Vec2, Program, Mesh, Box, Orbit, Raycast }
                 //     includeUV: true,
                 //     includeNormal: true,
                 // });
-                // if (hits.length) console.log(hits[0].hit.uv);
 
                 // Update our feedback using this array
                 hits.forEach(mesh => mesh.isHit = true);
