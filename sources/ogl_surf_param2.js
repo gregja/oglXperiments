@@ -1,5 +1,7 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from '../js/ogl/ogl.js';
 import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} from "../js/ogl_constants.js";
+import {CSG} from "../js/csg.js";
+import {generateOutputFileBlobUrl, generateCSG, generateTableForm} from "../js/csg_tools.js";
 {
 
     let info = document.getElementById('info');
@@ -28,6 +30,8 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
         edit_button: document.getElementById("edit-btn"),
         submit_button: document.getElementById("submit-btn"),
         export_button: document.getElementById("export-btn"),
+        stl_button: document.getElementById("generate-stl"),
+        stl_export_link: document.getElementById("generate-stl-link"),
         form: document.getElementById('myform'),
         warnings: document.querySelectorAll('[data-id=warning]'),
         fields: {}
@@ -91,7 +95,6 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
             ref.source.innerHTML = `<fieldset><legend>Source</legend>${tmpsrc}</fieldset>`;
         }
     };
-
 
     ref.submit_button.setAttribute('disabled', 'disabled');
 
@@ -171,6 +174,22 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
 
     }, false);
 
+    function downloadParams(filename, text) {
+        var new_name = parametricalSurfaces.replaceAll(filename, ' ', '_');
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', new_name+'_export.json');
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
+
+    ref.export_button.addEventListener('click', function(evt){
+        var datas = JSON.stringify(infos);
+        downloadParams(infos.name, datas);
+    });
+
     ref.form.addEventListener('submit', function(evt){
         evt.preventDefault();
         var custom = {};
@@ -225,6 +244,54 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
 
     }, false);
 
+    ref.stl_button.addEventListener('click', (evt)=>{
+        //console.log(shape3d);
+
+        function ConvertMeshToCSG(shape3d, scaleMulti=1, directExport=false, exportLink=null, exportFormat='stl') {
+// TODO : insérer une Promise
+            let multi = scaleMulti;
+            let csgpolygons = [];
+            let csg;
+            new Promise((resolve, reject) => {
+                shape3d.polygons.forEach(polys => {
+                    let vertices = [];
+                    polys.forEach(poly => {
+                        let point = shape3d.points[poly];
+                        let x = point.x*multi;
+                        let y = point.y*multi;
+                        let z = point.z*multi;
+                        let pos = CSG.Vector3D.Create(x, y, z);
+                        let vertex = new CSG.Vertex(pos);
+                        vertices.push(vertex);
+                    });
+                    let csgpolygon = new CSG.Polygon(vertices);
+                    csgpolygons.push(csgpolygon);
+                });
+                try {
+                    csg = CSG.fromPolygons(csgpolygons);
+                    csg.isCanonicalized = true;
+                    csg.isRetesselated  = true;
+                    resolve('CSG Shape ready');
+                } catch (err) {
+                    reject(err);
+                }
+            }).then(
+                function(val) {
+                    if (directExport) {
+                        generateOutputFileBlobUrl(csg, exportLink, exportFormat );
+                    }
+                    return csg;
+            }).catch(
+                // Promesse rejetée
+                function(err) {
+                    console.warn(err);
+                });
+        }
+
+        ConvertMeshToCSG(shape3d, 10, true, ref.stl_export_link, 'stl' )
+
+
+    }, false);
 
     function extract_code(value) {
         let sep = value.split('=');

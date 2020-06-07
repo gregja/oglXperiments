@@ -1350,7 +1350,7 @@ CSG.prototype = {
 		}
 		if (!sidemapisempty) {
 			// throw new Error("!sidemapisempty");
-		OpenJsCad.log("!sidemapisempty");
+			console.warn("!sidemapisempty");
 		}
 		return csg;
 	},
@@ -5911,7 +5911,7 @@ CAG.prototype = {
 			for (var ii = i + 1; ii < numsides; ii++) {
 				var side1 = this.sides[ii];
 				if (CAG.linesIntersect(side0.vertex0.pos, side0.vertex1.pos, side1.vertex0.pos, side1.vertex1.pos)) {
-					if (debug) { OpenJsCad.log(side0); OpenJsCad.log(side1);}
+					if (debug) { console.log(side0); console.log(side1);}
 					return true;
 				}
 			}
