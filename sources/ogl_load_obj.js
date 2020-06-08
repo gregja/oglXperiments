@@ -16,7 +16,7 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
             'alfa147', 'airboat', 'minicooper', 'violin_case', 'trumpet'];
         title = "3D object : ";
     } else {
-        list_shapes = ['eagle_vessel', 'giletto_logo', 'lol_mdr_yo_hahaha', 'parke', 'charniere', 'flute_notes'];
+        list_shapes = ['eagle_vessel', 'giletto_logo', 'lol_mdr_yo_hahaha', 'parke', 'charniere', 'flute_notes', "abandoned_city"];
         title = "3D object modelized by Kids on Tinkercad : "
     }
 

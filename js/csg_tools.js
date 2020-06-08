@@ -1,3 +1,5 @@
+import {CSG} from "./csg.js";
+
 function convertCsgObjectToBlob(csgObject, format="stl") {
     var blob;
     if(format == "stl") {
@@ -118,6 +120,12 @@ export function generateCSG(CSG, code, userdata=null, warningZone=undefined) {
     }
 }
 
+/**
+ * Generate a Form in a Table
+ * @param tableTarget
+ * @param definitions
+ * @returns {boolean|[]}
+ */
 export function generateTableForm(tableTarget, definitions) {
     let tableparams = document.getElementById(tableTarget);
     if (tableparams == undefined) {
@@ -146,4 +154,55 @@ export function generateTableForm(tableTarget, definitions) {
         tableparams.appendChild(tr);
     });
     return dictionary;
+}
+
+/**
+ * Convert a mesh to a CSG object
+ * @param shape3d
+ * @param scaleMulti
+ * @param directExport
+ * @param exportLink
+ * @param exportFormat
+ * @constructor
+ */
+export function ConvertMeshToCSG(shape3d, scaleMulti=1, directExport=false, exportLink=null, exportFormat='stl') {
+
+    let multi = scaleMulti;
+    let csgpolygons = [];
+    let csg;
+    new Promise((resolve, reject) => {
+        shape3d.polygons.forEach(polys => {
+            let vertices = [];
+            polys.forEach(poly => {
+                let point = shape3d.points[poly];
+                let x = point.x*multi;
+                let y = point.y*multi;
+                let z = point.z*multi;
+                let pos = CSG.Vector3D.Create(x, y, z);
+                let vertex = new CSG.Vertex(pos);
+                vertices.push(vertex);
+            });
+            let csgpolygon = new CSG.Polygon(vertices);
+            csgpolygons.push(csgpolygon);
+        });
+        try {
+            csg = CSG.fromPolygons(csgpolygons);
+            csg.isCanonicalized = true;
+            csg.isRetesselated  = true;
+            resolve('CSG Shape ready');
+        } catch (err) {
+            reject(err);
+        }
+    }).then(
+        function(val) {
+            if (directExport) {
+                generateOutputFileBlobUrl(csg, exportLink, exportFormat );
+            }
+            return csg;
+        }).catch(
+        // Promesse rejetée
+        function(err) {
+            console.warn(err);
+            return false;
+        });
 }

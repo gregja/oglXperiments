@@ -1,7 +1,6 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from '../js/ogl/ogl.js';
 import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} from "../js/ogl_constants.js";
-import {CSG} from "../js/csg.js";
-import {generateOutputFileBlobUrl, generateCSG, generateTableForm} from "../js/csg_tools.js";
+import {ConvertMeshToCSG} from "../js/csg_tools.js";
 {
 
     let info = document.getElementById('info');
@@ -245,51 +244,8 @@ import {generateOutputFileBlobUrl, generateCSG, generateTableForm} from "../js/c
     }, false);
 
     ref.stl_button.addEventListener('click', (evt)=>{
-        //console.log(shape3d);
-
-        function ConvertMeshToCSG(shape3d, scaleMulti=1, directExport=false, exportLink=null, exportFormat='stl') {
-// TODO : insérer une Promise
-            let multi = scaleMulti;
-            let csgpolygons = [];
-            let csg;
-            new Promise((resolve, reject) => {
-                shape3d.polygons.forEach(polys => {
-                    let vertices = [];
-                    polys.forEach(poly => {
-                        let point = shape3d.points[poly];
-                        let x = point.x*multi;
-                        let y = point.y*multi;
-                        let z = point.z*multi;
-                        let pos = CSG.Vector3D.Create(x, y, z);
-                        let vertex = new CSG.Vertex(pos);
-                        vertices.push(vertex);
-                    });
-                    let csgpolygon = new CSG.Polygon(vertices);
-                    csgpolygons.push(csgpolygon);
-                });
-                try {
-                    csg = CSG.fromPolygons(csgpolygons);
-                    csg.isCanonicalized = true;
-                    csg.isRetesselated  = true;
-                    resolve('CSG Shape ready');
-                } catch (err) {
-                    reject(err);
-                }
-            }).then(
-                function(val) {
-                    if (directExport) {
-                        generateOutputFileBlobUrl(csg, exportLink, exportFormat );
-                    }
-                    return csg;
-            }).catch(
-                // Promesse rejetée
-                function(err) {
-                    console.warn(err);
-                });
-        }
 
         ConvertMeshToCSG(shape3d, 10, true, ref.stl_export_link, 'stl' )
-
 
     }, false);
 

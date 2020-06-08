@@ -126,3 +126,11 @@ canvas {
     top: 0;
     left: 0;
 }
+
+.export-btn,.export-button{border:none;display:inline-block;padding:8px 16px;vertical-align:middle;overflow:hidden;text-decoration:none;color:inherit;background-color:inherit;text-align:center;cursor:pointer;white-space:nowrap}
+.export-btn:hover{box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19)}
+.export-cmp {
+    border-style: solid;
+    border-color: silver;
+    border-width: 0.5px;
+}

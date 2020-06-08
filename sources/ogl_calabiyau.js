@@ -1,19 +1,26 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from '../js/ogl/ogl.js';
 import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} from "../js/ogl_constants.js";
+import {ConvertMeshToCSG} from "../js/csg_tools.js";
 {
 
     let info = document.getElementById('info');
     info.innerHTML = "Calabi-Yau";
 
+    var ref = {
+        stl_button: document.getElementById("generate-stl"),
+        stl_export_link: document.getElementById("generate-stl-link"),
+    };
+
     var generateShape = shapeCalabiYau.generateShape;
 
+    let shape3d;
     let divider = 2;  // divider to adapt shapes to the WebGL space coordinates
     let geometry, mesh; // global variables to access in different contexts
 
     let settings = {
         rendering: 'TRIANGLE_STRIP',
         texture: textures[0],
-        isSpinning: true ,
+        isSpinning: false ,
         exponent: 5,
         projection: 3,
         disorder: 0
@@ -22,7 +29,7 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     function shapeGenerator(rendering) {
 
         let shape_params = {exponent: settings.exponent, projection: settings.projection, disorder:settings.disorder};
-        let shape3d = generateShape(shape_params);
+        shape3d = generateShape(shape_params);
 
         let xportMesh = [];
 
@@ -52,6 +59,12 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
         let sep = value.split('=');
         return sep[1];
     }
+
+    ref.stl_button.addEventListener('click', (evt)=>{
+
+        ConvertMeshToCSG(shape3d, 10, true, ref.stl_export_link, 'stl' )
+
+    }, false);
 
     const renderer = new Renderer({dpr: 2});
     const gl = renderer.gl;

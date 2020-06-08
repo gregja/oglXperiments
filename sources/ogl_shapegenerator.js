@@ -1,12 +1,18 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from '../js/ogl/ogl.js';
 import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} from "../js/ogl_constants.js";
+import {ConvertMeshToCSG} from "../js/csg_tools.js";
 {
 
     let info = document.getElementById('info');
     info.innerHTML = "3D Shape Generator";
 
-    var generateShape = shapes3dToolbox.customShape;
+    let ref = {
+        stl_button: document.getElementById("generate-stl"),
+        stl_export_link: document.getElementById("generate-stl-link"),
+    };
 
+    let generateShape = shapes3dToolbox.customShape;
+    let shape3d;
     let divider = 100;  // divider to adapt shapes to the WebGL space coordinates
     let geometry, mesh; // global variables to access in different contexts
 
@@ -36,7 +42,7 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
         // generate the "top" of the shape only (the algorithm for the "bottom" is not working correctly)
         shape_params.rendrParts = 1;
 
-        let shape3d = generateShape(shape_params);
+        shape3d = generateShape(shape_params);
 
         let xportMesh = [];
         let translation_y = 50;
@@ -113,6 +119,12 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     let save_btn = document.getElementById('save_btn');
     save_btn.addEventListener('click', (evt)=>{
         capture = true;
+    }, false);
+
+    ref.stl_button.addEventListener('click', (evt)=>{
+
+        ConvertMeshToCSG(shape3d, 10, true, ref.stl_export_link, 'stl' )
+
     }, false);
 
     function update() {
