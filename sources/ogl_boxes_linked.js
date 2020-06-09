@@ -10,7 +10,6 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     let settings = {
         rendering: 'TRIANGLE_FAN',  // best rendering with TRIANGLE_FAN
         texture: textures[0],
-
     };
 
     function extract_code(value) {
