@@ -1,5 +1,6 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from '../js/ogl/ogl.js';
 import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} from "../js/ogl_constants.js";
+import {ConvertMeshToCSG} from "../js/csg_tools.js";
 {
 
     let info = document.getElementById('info');
@@ -12,12 +13,18 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
 
     let current_shape = list_shapes[shapes3dToolbox.getRandomInt(list_shapes.length)];
     let effect = shapes3dToolbox.excavateShape;
+    let shape3d;
 
     let divider = 500;  // divider to adapt shapes to the WebGL space coordinates
     let geometry, mesh; // global variables to access in different contexts
 
     let thickness_modes = [1, 2, 4, 8, 10, 12, 16];
     let edge_modes = [1, 2, 3];
+
+    var ref = {
+        stl_button: document.getElementById("generate-stl"),
+        stl_export_link: document.getElementById("generate-stl-link"),
+    };
 
     let settings = {
         rendering: 'TRIANGLE_STRIP',
@@ -33,7 +40,7 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
         let current_shape = shapes3dToolbox.getShapeByName(settings.name);
         let shape3dTemp = eval(`shapes3dToolbox.${current_shape.fn}(current_shape.default)`);
 
-        let shape3d = effect(shape3dTemp, {bridge_mode: settings.edgeMode, thickness_ratio: settings.thickness});
+        shape3d = effect(shape3dTemp, {bridge_mode: settings.edgeMode, thickness_ratio: settings.thickness});
 
         let xportMesh = [];
 
@@ -108,6 +115,10 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     let save_btn = document.getElementById('save_btn');
     save_btn.addEventListener('click', (evt)=>{
         capture = true;
+    }, false);
+
+    ref.stl_button.addEventListener('click', (evt)=>{
+        ConvertMeshToCSG(shape3d, 1, true, ref.stl_export_link, 'stl', "shapeXcavated" )
     }, false);
 
     function update() {

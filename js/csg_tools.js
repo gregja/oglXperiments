@@ -57,9 +57,10 @@ function getExportFormatInfo(format) {
  * @param csgObject (object created by csg.js)
  * @param downloadLink (DOM target of an HTML tag "a" predefined and hidden on the page)
  * @param format  ("stl" by default)
+ * @param fileName  ("csg_shape" by default)
  * @returns {boolean}
  */
-export function generateOutputFileBlobUrl(csgObject, downloadLink, format="stl") {
+export function generateOutputFileBlobUrl(csgObject, downloadLink, format="stl", fileName="csg_shape") {
     let blob = convertCsgObjectToBlob(csgObject, format);
     if (blob === false) return;
     let windowURL = getWindowURL();
@@ -71,7 +72,7 @@ export function generateOutputFileBlobUrl(csgObject, downloadLink, format="stl")
     }
     downloadLink.href = outputFileBlobUrl;
     let ext = getExportFormatInfo(format).extension;
-    downloadLink.setAttribute("download", "csg_shape."+ext);
+    downloadLink.setAttribute("download", fileName+"."+ext);
     downloadLink.click();
 }
 
@@ -163,9 +164,10 @@ export function generateTableForm(tableTarget, definitions) {
  * @param directExport
  * @param exportLink
  * @param exportFormat
+ * @param fileName
  * @constructor
  */
-export function ConvertMeshToCSG(shape3d, scaleMulti=1, directExport=false, exportLink=null, exportFormat='stl') {
+export function ConvertMeshToCSG(shape3d, scaleMulti=1, directExport=false, exportLink=null, exportFormat='stl', fileName="csg_shape") {
 
     let multi = scaleMulti;
     let csgpolygons = [];
@@ -196,7 +198,7 @@ export function ConvertMeshToCSG(shape3d, scaleMulti=1, directExport=false, expo
     }).then(
         function(val) {
             if (directExport) {
-                generateOutputFileBlobUrl(csg, exportLink, exportFormat );
+                generateOutputFileBlobUrl(csg, exportLink, exportFormat, fileName );
             }
             return csg;
         }).catch(

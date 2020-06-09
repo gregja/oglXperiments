@@ -51,7 +51,7 @@ function letsgo () {
         export_button_stl.innerHTML = '&nbsp;Generate STL&nbsp;';
         export_area.appendChild(export_button_stl);
         export_button_stl.addEventListener('click', (evt)=>{
-            generateOutputFileBlobUrl(current3Dobject, downloadLink, 'stl' )
+            generateOutputFileBlobUrl(current3Dobject, downloadLink, 'stl', 'gear_CSG' )
         }, false);
     }
 

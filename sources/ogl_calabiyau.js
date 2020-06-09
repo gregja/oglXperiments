@@ -61,9 +61,7 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
     }
 
     ref.stl_button.addEventListener('click', (evt)=>{
-
-        ConvertMeshToCSG(shape3d, 10, true, ref.stl_export_link, 'stl' )
-
+        ConvertMeshToCSG(shape3d, 50, true, ref.stl_export_link, 'stl', "CalabiYau" )
     }, false);
 
     const renderer = new Renderer({dpr: 2});

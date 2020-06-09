@@ -244,9 +244,7 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
     }, false);
 
     ref.stl_button.addEventListener('click', (evt)=>{
-
-        ConvertMeshToCSG(shape3d, 10, true, ref.stl_export_link, 'stl' )
-
+        ConvertMeshToCSG(shape3d, 10, true, ref.stl_export_link, 'stl', "parametricSurface" );
     }, false);
 
     function extract_code(value) {

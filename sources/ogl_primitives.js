@@ -1,11 +1,18 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from '../js/ogl/ogl.js';
 import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} from "../js/ogl_constants.js";
+import {ConvertMeshToCSG} from "../js/csg_tools.js";
 {
 
     let info = document.getElementById('info');
 
+    var ref = {
+        stl_button: document.getElementById("generate-stl"),
+        stl_export_link: document.getElementById("generate-stl-link"),
+    };
+
     let list_shapes = shapes3dToolbox.getGeneratorsList();
     let shapes3DList = [];
+    let shape3d;
     list_shapes.forEach((item, id) => {
        shapes3DList.push(item.name);
     });
@@ -25,7 +32,7 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     function shapeGenerator(value, rendering) {
         info.innerHTML = "3D object : " + value;
         let current_shape = shapes3dToolbox.getShapeByName(value);
-        let shape3d = eval(`shapes3dToolbox.${current_shape.fn}(current_shape.default)`);
+        shape3d = eval(`shapes3dToolbox.${current_shape.fn}(current_shape.default)`);
         let xportMesh = [];
 
         shape3d.polygons.forEach(polygons => {
@@ -99,6 +106,10 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     let save_btn = document.getElementById('save_btn');
     save_btn.addEventListener('click', (evt)=>{
         capture = true;
+    }, false);
+
+    ref.stl_button.addEventListener('click', (evt)=>{
+        ConvertMeshToCSG(shape3d, 1, true, ref.stl_export_link, 'stl', "primitive" )
     }, false);
 
     function update() {

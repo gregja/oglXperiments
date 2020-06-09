@@ -1,5 +1,6 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from '../js/ogl/ogl.js';
 import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} from "../js/ogl_constants.js";
+import {ConvertMeshToCSG} from "../js/csg_tools.js";
 {
 
     let info = document.getElementById('info');
@@ -8,6 +9,11 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
     let current_shape = parametricalSurfaces.setSurface(parametricalSurfaces.getRndItemFromList());
     let surface_listing = parametricalSurfaces.getList();
     info.innerHTML = current_shape.name;
+
+    var ref = {
+        stl_button: document.getElementById("generate-stl"),
+        stl_export_link: document.getElementById("generate-stl-link"),
+    };
 
     let generator_modes = ['0=Quad', '1=Triangle (1/2)', '2=Triangle (2/2)']; //(0=quad ; 1=triangle, draw one facet by two; 2=triangle, draw all facets)
 
@@ -79,6 +85,9 @@ import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} 
         capture = true;
     }, false);
 
+    ref.stl_button.addEventListener('click', (evt)=>{
+        ConvertMeshToCSG(shape3d, 10, true, ref.stl_export_link, 'stl', "parametricSurface" )
+    }, false);
 
     function update() {
         requestAnimationFrame(update);
