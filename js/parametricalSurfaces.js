@@ -1327,7 +1327,79 @@ var parametricalSurfaces = (function () {
         },
         scale: DEFAULT_SCALE,
         rotation: {x: TAU / 8}
-    })
+    });
+
+    surface_types.push({
+        id: 80,
+        name: 'Cow Knot',
+        comment: 'https://mathcurve.com/courbes3d/plat.vache/plat_vache.shtml',
+        list: 1,
+        params: {A: .1, B: 0},
+        u: {begin: 0, end: TAU, step: 0.2},
+        v: {begin: 0, end: TAU, step: 0.2},
+        fx: (u, v) => 3 * sin(u) + 2 * sin(3 * u),
+        fy: (u, v) => cos(u) - 2 * cos(3 * u),
+        fz: (u, v) => sin(10 * v), // cos(5 * v),
+        scale: DEFAULT_SCALE * 5
+    });
+
+    surface_types.push({
+        id: 82,
+        name: 'Knot 1 (Paul Bourke)',
+        list: 1,
+        comment: 'http://paulbourke.net/geometry/knots/',
+        params: {A: 100, B: 100},
+        u: {begin: 0, end: 100, step: 1},
+        v: {begin: 0, end: 100, step: 1},
+        fxyz: (u, v) => {
+            let mu = u * TAU / A;
+            let mv = v * TAU / A;
+            let x = 10 * (cos(mu) + cos(3*mu)) + cos(2*mu) + cos(4*mu);
+            let y = 6 * sin(mv) + 10 * sin(3*mv);
+            let z = 4 * sin(3*mu) * sin(5*mu/2) + 4*sin(4*mu) - 2 * sin(6*mu);
+            return {x: x, y: y, z: z};
+        },
+        scale: DEFAULT_SCALE,
+        rotation: {x: TAU / 8}
+    });
+
+    surface_types.push({
+        id: 83,
+        name: 'Knot 2 (Paul Bourke)',
+        list: 1,
+        comment: 'http://paulbourke.net/geometry/knots/',
+        params: {A: 100, B: 100},
+        u: {begin: 0, end: 100, step: 1},
+        v: {begin: 0, end: 100, step: 1},
+        fxyz: (u, v) => {
+            let mu = u * TAU / A;
+            let x = (4 * cos(mu + PI)) / 3 + 2 * cos(3 * mu);
+            let y = 4 * sin(mu) / 3 + 2 * sin(3 * mu);
+            let z = sin(4 * mu) + sin(2 * mu) / 2;
+            return {x: x, y: y, z: z};
+        },
+        scale: DEFAULT_SCALE,
+        rotation: {x: TAU / 8}
+    });
+
+    surface_types.push({
+        id: 84,
+        name: 'Knot 3 (Paul Bourke) with TRIANGLE_FAN mode',
+        list: 1,
+        comment: 'http://paulbourke.net/geometry/knots/',
+        params: {A: 100, B: 6, C:11},
+        u: {begin: 0, end: 100, step: 1},
+        v: {begin: 0, end: 1, step: 1},
+        fxyz: (u, v) => {
+            let mu = u * TAU * B / A;
+            let x = cos(mu) * (1 + cos(C*mu/B) / 2.0);
+            let y = sin(mu) * (1 + cos(C*mu/B) / 2.0);
+            let z = sin(C*mu/B) / 2.0;
+            return {x: x, y: y, z: z};
+        },
+        scale: DEFAULT_SCALE,
+        rotation: {x: TAU / 8}
+    });
 
     /**
      * Check if the source code of a parametric function is correct
