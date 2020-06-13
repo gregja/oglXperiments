@@ -24,7 +24,7 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
         texture: textures[0],
         name: current_shape.name,
         isSpinning: false,
-        backgroundColor: [0, 0, 0, 1]
+        backgroundColor: [1, 1, 1, 1]
     };
 
     function extract_code(value) {
@@ -40,7 +40,6 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
     const renderer = new Renderer({dpr: 2});
     const gl = renderer.gl;
     document.body.appendChild(gl.canvas);
-//    gl.clearColor(1, 1, 1, 1);
     gl.clearColor(...settings.backgroundColor);
 
     var camera = new Camera(gl);
@@ -63,9 +62,8 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
     function loadTexture(param) {
         if (extract_code(param) != 0) {
             texture = new Texture(gl);
-            console.log(param);
             if (param.substr(-4) != '.png') {
-                console.log('xxx');
+                // TODO : experimental gradiant texture (extend the choice and improve ergonomy)
                 texture.image = gradTexture([[0.75, 0.6, 0.4, 0.25], textures_predefined.palette01.colors]); // eval('param');
             } else {
                 const img = new Image();
@@ -217,7 +215,6 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
             shapeGenerator(obj, shape3d);
         });
 
-
         let gui_spinning = gui.add(obj, 'isSpinning').listen();
         gui_spinning.onChange(function(value){
             obj.isSpinning = Boolean(value);
@@ -225,15 +222,9 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
 
         let gui_backgcol = gui.addColor(obj, 'backgroundColor').listen();
         gui_backgcol.onChange(function(value){
-            console.log(value);
-             obj.backgroundColor = value.map(val => Math.floor(val)/255);
-
-             console.log(obj.backgroundColor, settings.backgroundColor);
-
-            gl.clearColor(obj.backgroundColor[0], obj.backgroundColor[1], obj.backgroundColor[2], obj.backgroundColor[3]);
+            obj.backgroundColor = value.map(val => Math.floor(val)/255);
+            gl.clearColor(...settings.backgroundColor);
             gl.clear(gl.COLOR_BUFFER_BIT);
-        //    gl.clearColor(0, 1, 0, 1);
-         //   gl.clearColor(...settings.backgroundColor);
         });
     }
 
