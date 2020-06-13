@@ -1,5 +1,6 @@
-import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from '../js/ogl/ogl.js';
-import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} from "../js/ogl_constants.js";
+import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Box, Sphere, Vec3, Orbit} from '../js/ogl/ogl.js';
+import {vertex100, fragment100, vertex300, fragment300, render_modes_extended, textures_extended as textures,
+    gradTexture, textures_predefined} from "../js/ogl_constants.js";
 import {ConvertMeshToCSG} from "../js/csg_tools.js";
 {
 
@@ -22,7 +23,8 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
         gen_mode: generator_modes[0],
         texture: textures[0],
         name: current_shape.name,
-        isSpinning: false
+        isSpinning: false,
+        backgroundColor: [0, 0, 0, 1]
     };
 
     function extract_code(value) {
@@ -38,7 +40,8 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
     const renderer = new Renderer({dpr: 2});
     const gl = renderer.gl;
     document.body.appendChild(gl.canvas);
-    gl.clearColor(1, 1, 1, 1);
+//    gl.clearColor(1, 1, 1, 1);
+    gl.clearColor(...settings.backgroundColor);
 
     var camera = new Camera(gl);
     camera.position.set(2, 1, 0);
@@ -57,12 +60,32 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
     let scene = new Transform();
     let texture = new Texture(gl);
 
+    function loadTexture(param) {
+        if (extract_code(param) != 0) {
+            texture = new Texture(gl);
+            console.log(param);
+            if (param.substr(-4) != '.png') {
+                console.log('xxx');
+                texture.image = gradTexture([[0.75, 0.6, 0.4, 0.25], textures_predefined.palette01.colors]); // eval('param');
+            } else {
+                const img = new Image();
+                img.onload = () => texture.image = img;
+                img.src = '../assets/' + extract_value(param);
+            }
+
+        } else {
+            texture = new Texture(gl);
+        }
+    }
+    loadTexture(settings.texture);
+
+    /*
     if (extract_code(settings.texture) != 0) {
         const img = new Image();
         img.onload = () => texture.image = img;
         img.src = '../assets/' + extract_value(settings.texture);
     }
-
+     */
     const program = new Program(gl, {
         vertex: renderer.isWebgl2 ? vertex300 : vertex100,
         fragment: renderer.isWebgl2 ? fragment300 : fragment100,
@@ -114,7 +137,34 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
     }
 
     function shapeGenerator(obj, shape3d) {
+        scene = new Transform();
         let divider = 5;
+        let rendering = obj.rendering;
+
+        if (rendering == 'BALLS' || rendering == 'BOXES' || rendering == 'BALLS_TRIANGLE_STRIP' || rendering == 'BOXES_TRIANGLE_STRIP') {
+            let tmpGeometry;
+            if (obj.rendering == 'BALLS' || rendering == 'BALLS_TRIANGLE_STRIP') {
+                tmpGeometry = new Sphere(gl, {radius: 0.2, widthSegments:32, heightSegments:32});
+            } else {
+                tmpGeometry = new Box(gl, {width: 0.2, height:0.2, depth:0.2});
+            }
+            //const sphereGeometry = new Sphere(gl, {radius: 0.2, widthSegments:32, heightSegments:32});
+            shape3d.polygons.forEach(polygons => {
+                polygons.forEach(poly => {
+                    let point = shape3d.points[poly];
+                    const sphere = new Mesh(gl, { geometry: tmpGeometry, program });
+                    sphere.position.set(point.x/divider, point.y/divider, point.z/divider);
+                    sphere.scale.set(point.x/divider, point.y/divider, point.z/divider);
+                    sphere.setParent(scene);
+                })
+            });
+            if (rendering != 'BALLS_TRIANGLE_STRIP' && rendering != 'BOXES_TRIANGLE_STRIP') {
+                return;
+            } else {
+                rendering = 'TRIANGLE_STRIP';
+            }
+        }
+
         xportMesh = [];
         shape3d.polygons.forEach(polygons => {
             polygons.forEach(poly => {
@@ -127,9 +177,7 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
         geometry = new Geometry(gl, {
             position: {size: 3, data: new Float32Array(xportMesh)}
         });
-        scene = new Transform();
-        new Mesh(gl, {mode: gl[obj.rendering], geometry, program});
-        mesh = new Mesh(gl, {mode: gl[obj.rendering], geometry, program});
+        mesh = new Mesh(gl, {mode: gl[rendering], geometry, program});
         mesh.setParent(scene);
     }
 
@@ -145,27 +193,20 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
             shapeGenerator(obj, shape3d);
         });
 
-        var guiRndrMode = gui.add(obj, 'rendering', render_modes, obj.rendering).listen();  // none by default
+        var guiRndrMode = gui.add(obj, 'rendering', render_modes_extended, obj.rendering).listen();  // none by default
         guiRndrMode.onChange(function(value){
             obj.rendering = value;
-            scene = new Transform();
-            mesh = new Mesh(gl, {mode: gl[value], geometry, program});
-            mesh.setParent(scene);
+            //mesh = new Mesh(gl, {mode: gl[value], geometry, program});
+            //mesh.setParent(scene);
+            shapeGenerator(obj, shape3d);
         });
 
         var guiTexture = gui.add(obj, 'texture', textures, obj.texture).listen();  // none by default
         guiTexture.onChange(function(value){
             if (obj.texture != null) {
                 obj.texture = value;
-                if (extract_code(obj.texture) != 0) {
-                    const img = new Image();
-                    img.onload = () => texture.image = img;
-                    img.src = '../assets/' + extract_value(obj.texture);
-                    program.uniforms.tMap = {value: texture};
-                } else {
-                    texture = new Texture(gl);
-                    program.uniforms.tMap = {value: texture};
-                }
+                loadTexture(obj.texture);
+                program.uniforms.tMap = {value: texture};
             }
         });
 
@@ -182,6 +223,18 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
             obj.isSpinning = Boolean(value);
         });
 
+        let gui_backgcol = gui.addColor(obj, 'backgroundColor').listen();
+        gui_backgcol.onChange(function(value){
+            console.log(value);
+             obj.backgroundColor = value.map(val => Math.floor(val)/255);
+
+             console.log(obj.backgroundColor, settings.backgroundColor);
+
+            gl.clearColor(obj.backgroundColor[0], obj.backgroundColor[1], obj.backgroundColor[2], obj.backgroundColor[3]);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+        //    gl.clearColor(0, 1, 0, 1);
+         //   gl.clearColor(...settings.backgroundColor);
+        });
     }
 
     document.addEventListener("DOMContentLoaded", function (event) {

@@ -1,4 +1,5 @@
 import {Renderer, Camera, Transform, Texture, Program, Mesh, Box, Sphere, Orbit} from '../js/ogl/ogl.js';
+import {gradTexture, basicTexture, checkerboardTexture} from "../js/ogl_constants.js";
 
 function letsgo() {
 
@@ -43,51 +44,6 @@ function letsgo() {
     //----------------------------------
     //  TEXTURES
     //----------------------------------
-
-    function gradTexture(colors) {
-        var canvas = document.createElement("canvas");
-        var ct = canvas.getContext("2d");
-        var size = 1024;
-        canvas.width = 16;
-        canvas.height = size;
-        var gradient = ct.createLinearGradient(0, 0, 0, size);
-        var i = colors[0].length;
-        while (i--) {
-            gradient.addColorStop(colors[0][i], colors[1][i]);
-        }
-        ct.fillStyle = gradient;
-        ct.fillRect(0, 0, 16, size);
-        return canvas;
-    }
-
-    function basicTexture(colors, n) {
-        var canvas = document.createElement('canvas');
-        canvas.width = canvas.height = 64;
-        var ctx = canvas.getContext('2d');
-        var color = "#3884AA"; // default color if n not found
-        if (colors[n]) {
-            color = colors[n];
-        }
-        ctx.fillStyle = color;
-        ctx.fillRect(0, 0, 64, 64);
-        ctx.fillStyle = "rgba(0,0,0,0.2)";
-        ctx.fillRect(0, 0, 32, 32);
-        ctx.fillRect(32, 32, 32, 32);
-        return canvas;
-    }
-
-    function checkerboardTexture() {
-        var c = document.createElement('canvas').getContext('2d');
-        c.canvas.width = c.canvas.height = 128;
-        let step = 16;
-        for (let y = 0, ylen = c.canvas.height; y < ylen; y += step) {
-            for (let x = 0, xlen = c.canvas.width; x < xlen; x += step) {
-                c.fillStyle = (x ^ y) & step ? '#FFF' : '#DDD';
-                c.fillRect(x, y, step, step);
-            }
-        }
-        return c.canvas;
-    }
 
     {
         const renderer = new Renderer({dpr: 2});
