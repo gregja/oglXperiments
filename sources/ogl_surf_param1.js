@@ -42,8 +42,12 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
     document.body.appendChild(gl.canvas);
     gl.clearColor(...settings.backgroundColor);
 
-    var camera = new Camera(gl);
+    const camera = new Camera(gl);
     camera.position.set(2, 1, 0);
+
+    //const camera = new Camera(gl, {fov: 60, near: 1, far: 5000});
+    //camera.position.set(0, 50, 50);
+    //camera.lookAt([0, 0, 0]);
 
     var controls = new Orbit(camera, {
         target: new Vec3(0, 0.2, 0),
@@ -150,10 +154,11 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
             shape3d.polygons.forEach(polygons => {
                 polygons.forEach(poly => {
                     let point = shape3d.points[poly];
-                    const sphere = new Mesh(gl, { geometry: tmpGeometry, program });
-                    sphere.position.set(point.x/divider, point.y/divider, point.z/divider);
-                    sphere.scale.set(point.x/divider, point.y/divider, point.z/divider);
-                    sphere.setParent(scene);
+                    let tmpmesh = new Mesh(gl, { geometry: tmpGeometry, program });
+                    tmpmesh.position.set(point.x/divider, point.y/divider, point.z/divider);
+                    //tmpmesh.scale.set(point.x/divider, point.y/divider, point.z/divider);
+                    //tmpmesh.scale.set(.2, .2, .2);
+                    tmpmesh.setParent(scene);
                 })
             });
             if (rendering != 'BALLS_TRIANGLE_STRIP' && rendering != 'BOXES_TRIANGLE_STRIP') {

@@ -1401,6 +1401,19 @@ var parametricalSurfaces = (function () {
         rotation: {x: TAU / 8}
     });
 
+    surface_types.push({
+        id: 90,
+        name: 'Bow curves v2',
+        list: 2,
+        params: {A: .2},
+        u: {begin: 0, end: 1, step: 0.05},
+        v: {begin: 0, end: 1, step: 0.01},
+        fx: (u, v) => (5 + A * sin(TAU * u)) * sin((TAU*3) * v),
+        fy: (u, v) => (5 + A * sin(TAU * u)) * cos((TAU*3) * v),
+        fz: (u, v) => A * cos(TAU * u) + 3 * cos(TAU*2 * v),
+        scale: DEFAULT_SCALE * 2
+    });
+    
     /**
      * Check if the source code of a parametric function is correct
      * @param fn
