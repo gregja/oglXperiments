@@ -1365,10 +1365,10 @@ var parametricalSurfaces = (function () {
 
     surface_types.push({
         id: 83,
-        name: 'Knot 2 (Paul Bourke)',
+        name: 'Knot 2 (Paul Bourke) with TRIANGLE_FAN mode',
         list: 1,
         comment: 'http://paulbourke.net/geometry/knots/',
-        params: {A: 100, B: 100},
+        params: {A: 100, B: 0},
         u: {begin: 0, end: 100, step: 1},
         v: {begin: 0, end: 100, step: 1},
         fxyz: (u, v) => {
@@ -1384,6 +1384,25 @@ var parametricalSurfaces = (function () {
 
     surface_types.push({
         id: 84,
+        name: 'Knot 2 (Paul Bourke) - variant',
+        list: 1,
+        comment: 'http://paulbourke.net/geometry/knots/',
+        params: {A: 100, B: 0},
+        u: {begin: 0, end: 100, step: 1},
+        v: {begin: 0, end: 1, step: .01},
+        fxyz: (u, v) => {
+            let mu = u * TAU / A;
+            let x = (4 * cos(mu + PI)) / 3 + 2 * cos(3 * mu) * sin(TAU*v);
+            let y = 4 * sin(mu) / 3 + 2 * sin(3 * mu) * cos(TAU*v);
+            let z = sin(4 * mu) + sin(2 * mu) / 2;
+            return {x: x, y: y, z: z};
+        },
+        scale: DEFAULT_SCALE,
+        rotation: {x: TAU / 8}
+    });
+
+    surface_types.push({
+        id: 85,
         name: 'Knot 3 (Paul Bourke) with TRIANGLE_FAN mode',
         list: 1,
         comment: 'http://paulbourke.net/geometry/knots/',
@@ -1394,6 +1413,25 @@ var parametricalSurfaces = (function () {
             let mu = u * TAU * B / A;
             let x = cos(mu) * (1 + cos(C*mu/B) / 2.0);
             let y = sin(mu) * (1 + cos(C*mu/B) / 2.0);
+            let z = sin(C*mu/B) / 2.0;
+            return {x: x, y: y, z: z};
+        },
+        scale: DEFAULT_SCALE,
+        rotation: {x: TAU / 8}
+    });
+
+    surface_types.push({
+        id: 86,
+        name: 'Knot 3 (Paul Bourke) - variant',
+        list: 1,
+        comment: 'http://paulbourke.net/geometry/knots/',
+        params: {A: 100, B: 4, C:7},
+        u: {begin: 0, end: 100, step: .1},
+        v: {begin: 0, end: 1, step: 0.01},
+        fxyz: (u, v) => {
+            let mu = u * TAU * B / A;
+            let x = cos(mu) * (1 + cos(C*mu/B) / 2.0) * sin(TAU*v);
+            let y = sin(mu) * (1 + cos(C*mu/B) / 2.0) * cos(TAU*v);
             let z = sin(C*mu/B) / 2.0;
             return {x: x, y: y, z: z};
         },

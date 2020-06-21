@@ -2,7 +2,8 @@ import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Box, Sphe
 import {vertex100, fragment100, vertex300, fragment300, render_modes_extended, textures_extended as textures,
     gradTexture, textures_predefined} from "../js/ogl_constants.js";
 import {ConvertMeshToCSG} from "../js/csg_tools.js";
-{
+
+function letsgo () {
 
     let info = document.getElementById('info');
 
@@ -47,7 +48,7 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
 
     //const camera = new Camera(gl, {fov: 60, near: 1, far: 5000});
     //camera.position.set(0, 50, 50);
-    //camera.lookAt([0, 0, 0]);
+    // camera.lookAt([0, 0, 0]);
 
     var controls = new Orbit(camera, {
         target: new Vec3(0, 0.2, 0),
@@ -233,9 +234,11 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
         });
     }
 
-    document.addEventListener("DOMContentLoaded", function (event) {
-        console.log("DOM fully loaded and parsed");
         addGui(settings);
         requestAnimationFrame(update);
-    });
 }
+
+document.addEventListener("DOMContentLoaded", function (event) {
+    console.log("DOM fully loaded and parsed");
+    letsgo();
+});

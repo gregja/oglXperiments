@@ -97,12 +97,12 @@
                 </div>
             </div>
             <div class="w3-row-padding">
-                <label class="w3-third">A <input type="text" class="w3-input w3-border w3-round" data-field="const-a"></label>
-                <label class="w3-third">B <input type="text" class="w3-input w3-border w3-round" data-field="const-b"></label>
-                <label class="w3-third">C <input type="text" class="w3-input w3-border w3-round" data-field="const-c"></label>
-                <label class="w3-third">D <input type="text" class="w3-input w3-border w3-round" data-field="const-d"></label>
-                <label class="w3-third">E <input type="text" class="w3-input w3-border w3-round" data-field="const-e"></label>
-                <label class="w3-third">F <input type="text" class="w3-input w3-border w3-round" data-field="const-f"></label>
+                <label class="w3-third">A <input type="number" class="w3-input w3-border w3-round" data-field="const-a" step="0.001"></label>
+                <label class="w3-third">B <input type="number" class="w3-input w3-border w3-round" data-field="const-b" step="0.001"></label>
+                <label class="w3-third">C <input type="number" class="w3-input w3-border w3-round" data-field="const-c" step="0.001"></label>
+                <label class="w3-third">D <input type="number" class="w3-input w3-border w3-round" data-field="const-d" step="0.001"></label>
+                <label class="w3-third">E <input type="number" class="w3-input w3-border w3-round" data-field="const-e" step="0.001"></label>
+                <label class="w3-third">F <input type="number" class="w3-input w3-border w3-round" data-field="const-f" step="0.001"></label>
                 <br><br>
             </div><br>
             <div class="w3-tag w3-round w3-green" style="padding:3px">
@@ -111,9 +111,9 @@
                 </div>
             </div>
             <div class="w3-row-padding">
-                <label class="w3-third">Begin <input type="text" class="w3-input w3-border w3-round" data-field="limit-u-begin"></label>
-                <label class="w3-third">End <input type="text" class="w3-input w3-border w3-round" data-field="limit-u-end"></label>
-                <label class="w3-third">Step <input type="text" class="w3-input w3-border w3-round" data-field="limit-u-step"></label>
+                <label class="w3-third">Begin <input type="number" class="w3-input w3-border w3-round" data-field="limit-u-begin" step="0.001"></label>
+                <label class="w3-third">End <input type="number" class="w3-input w3-border w3-round" data-field="limit-u-end" step="0.001"></label>
+                <label class="w3-third">Step <input type="number" class="w3-input w3-border w3-round" data-field="limit-u-step" step="0.001"></label>
                 <br><br>
             </div><br>
             <div class="w3-tag w3-round w3-green" style="padding:3px">
@@ -122,9 +122,9 @@
                 </div>
             </div>
             <div class="w3-row-padding">
-                <label class="w3-third">Begin <input type="text" class="w3-input w3-border w3-round" data-field="limit-v-begin"></label>
-                <label class="w3-third">End <input type="text" class="w3-input w3-border w3-round" data-field="limit-v-end"></label>
-                <label class="w3-third">Step <input type="text" class="w3-input w3-border w3-round" data-field="limit-v-step"></label>
+                <label class="w3-third">Begin <input type="number" class="w3-input w3-border w3-round" data-field="limit-v-begin" step="0.001"></label>
+                <label class="w3-third">End <input type="number" class="w3-input w3-border w3-round" data-field="limit-v-end" step="0.001"></label>
+                <label class="w3-third">Step <input type="number" class="w3-input w3-border w3-round" data-field="limit-v-step" step="0.001"></label>
                 <br><br>
             </div><br>
             <div class="w3-tag w3-round w3-green" style="padding:3px">
@@ -139,6 +139,10 @@
                 <label>Fxyz(u,v)<span data-id="warning"></span> <textarea class="w3-input w3-border w3-round" data-field="fxyz" rows="6" cols="50"></textarea></label>
                 <br><br>
             </div>
+            <div class="w3-row-padding">
+                <label class="w3-third">Dec precision <input type="number" class="w3-input w3-border w3-round" data-field="dec-precision" min="2" max="9" step="1" value="3"></label>
+                <br><br>
+            </div><br>
         </form>
     </div>
     <fieldset>

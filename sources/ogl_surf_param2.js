@@ -1,7 +1,8 @@
 import {Renderer, Camera, Transform, Texture, Program, Geometry, Mesh, Vec3, Orbit} from '../js/ogl/ogl.js';
 import {vertex100, fragment100, vertex300, fragment300, render_modes, textures} from "../js/ogl_constants.js";
 import {ConvertMeshToCSG} from "../js/csg_tools.js";
-{
+
+function letsgo() {
 
     let info = document.getElementById('info');
 
@@ -33,7 +34,8 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
         stl_export_link: document.getElementById("generate-stl-link"),
         form: document.getElementById('myform'),
         warnings: document.querySelectorAll('[data-id=warning]'),
-        fields: {}
+        fields: {},
+        decPrecision: 3
     };
 
     function clearWarnings() {
@@ -64,6 +66,10 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
             ref.link.innerHTML = '';
         }
     }
+
+    var forcePrecision = (value) => Number(Number(value).toFixed(ref.decPrecision));
+
+    var decPrecision = (value) => Math.pow(10, -value);
 
     var formatSource = ()=> {
         ref.source.innerHTML = '';
@@ -129,7 +135,7 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
                 let value = infos.params[idx][item];
                 if (value != '') {
                     let node = ref.fields['const-'+letrItem];
-                    node.value = value;
+                    node.value = forcePrecision(value);
                     node.parentNode.style.display = "block";
                     node.setAttribute('data-hidden', 'false');
                 }
@@ -138,7 +144,7 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
 
         ['u', 'v'].forEach(curveLevl => {
             ['begin', 'end', 'step'].forEach(stepLevel => {
-                let value = infos.limits[curveLevl][stepLevel];
+                let value = forcePrecision(infos.limits[curveLevl][stepLevel]);
                 ref.fields[`limit-${curveLevl}-${stepLevel}`].value = value;
             });
         });
@@ -358,6 +364,26 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
         mesh.setParent(scene);
     }
 
+    let decPrecisionField = document.querySelector('[data-field=dec-precision]');
+    if (decPrecisionField == undefined) {
+        console.warn('field "dec-precision" not found');
+    } else {
+        decPrecisionField.addEventListener('change', evt=>{
+            let value = parseInt(evt.currentTarget.value);
+
+            if (ref.decPrecision != value) {
+                ref.decPrecision = value;
+                let prec = decPrecision(value);
+                let in_numbers = document.querySelectorAll('[type=number]');
+                in_numbers.forEach(field => {
+                    if (field != decPrecisionField) {
+                        field.setAttribute('step', prec);
+                    }
+                });            }
+
+        }, false);
+    }
+
     function addGui(obj) {
         let gui = new dat.gui.GUI();
 
@@ -426,9 +452,11 @@ import {ConvertMeshToCSG} from "../js/csg_tools.js";
 
     }
 
-    document.addEventListener("DOMContentLoaded", function (event) {
-        console.log("DOM fully loaded and parsed");
         addGui(settings);
         requestAnimationFrame(update);
-    });
 }
+
+document.addEventListener("DOMContentLoaded", function (event) {
+    console.log("DOM fully loaded and parsed");
+    letsgo();
+});
