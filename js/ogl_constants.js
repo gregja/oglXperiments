@@ -152,10 +152,9 @@ export const textures_predefined = {
 };
 
 
-export function gradTexture(colors) {
+export function gradTexture(colors, size=1024) {
     var canvas = document.createElement("canvas");
     var ct = canvas.getContext("2d");
-    var size = 1024;
     canvas.width = 16;
     canvas.height = size;
     var gradient = ct.createLinearGradient(0, 0, 0, size);
@@ -168,9 +167,9 @@ export function gradTexture(colors) {
     return canvas;
 }
 
-export function basicTexture(colors, n) {
+export function basicTexture(colors, n, size=64) {
     var canvas = document.createElement('canvas');
-    canvas.width = canvas.height = 64;
+    canvas.width = canvas.height = size;
     var ctx = canvas.getContext('2d');
     var color = "#3884AA"; // default color if n not found
     if (colors[n]) {
@@ -184,9 +183,9 @@ export function basicTexture(colors, n) {
     return canvas;
 }
 
-export function checkerboardTexture() {
+export function checkerboardTexture(size=128) {
     var c = document.createElement('canvas').getContext('2d');
-    c.canvas.width = c.canvas.height = 128;
+    c.canvas.width = c.canvas.height = size;
     let step = 16;
     for (let y = 0, ylen = c.canvas.height; y < ylen; y += step) {
         for (let x = 0, xlen = c.canvas.width; x < xlen; x += step) {
@@ -196,3 +195,65 @@ export function checkerboardTexture() {
     }
     return c.canvas;
 }
+
+export function gleaTexture1 (sizeX=256, sizeY=256) {
+    var c = document.createElement('canvas').getContext('2d');
+    c.canvas.width = sizeX;
+    c.canvas.height = sizeY;
+    const {
+        cos, sin, PI, sqrt, pow, abs, floor
+    } = Math;
+    let ff=255;
+    let img = new ImageData(sizeX,sizeY);
+    let midX = floor(sizeX / 2);
+    let midY = floor(sizeY / 2);
+    for(let Y=sizeY;Y--;) {
+        for(let X=sizeX;X--;){
+            let x = X-midX
+            let y = Y-midY
+            let offs = (Y<<10)+(X<<2)
+            let v1=(Q(x*x+y*y)|0)
+            //let v2=(127+(sin(.03*(abs(x)+abs(y)))+sin(.03*(x*x+y*y))+sin(.003*(pow(abs(x),1.5)+pow(abs(y),1.5)))*ff/3))|0
+            img.data[offs  ]=(v1&31)*8
+            img.data[offs+1]=(v1&31)
+            img.data[offs+2]=(v1&15)*16
+            img.data[offs+3]=ff
+        }
+    }
+    c.canvas.putImageData(img,0,0)
+    return c.canvas;
+}
+
+export function gleaTexture2 (sizeX=256, sizeY=256) {
+    var c = document.createElement('canvas').getContext('2d');
+    c.canvas.width = sizeX;
+    c.canvas.height = sizeY;
+    const {
+        cos, sin, PI, sqrt, pow, abs, floor
+    } = Math;
+    let ff=255;
+    let img = new ImageData(sizeX,sizeY);
+    let midX = floor(sizeX / 2);
+    let midY = floor(sizeY / 2);
+    for(let Y=sizeY;Y--;) {
+        for(let X=sizeX;X--;){
+            let x = X-midX
+            let y = Y-midY
+            let offs = (Y<<10)+(X<<2)
+            //let v1=(sqrt(x*x+y*y)|0)
+            let v2=(127+(sin(.03*(abs(x)+abs(y)))+sin(.03*(x*x+y*y))+sin(.003*(pow(abs(x),1.5)+pow(abs(y),1.5)))*ff/3))|0
+            img.data[offs  ]=v2
+            img.data[offs+1]=0
+            img.data[offs+2]=v2
+            img.data[offs+3]=ff
+        }
+    }
+    c.canvas.putImageData(img,0,0)
+    return c.canvas;
+}
+
+/*
+test = genTexture2(256, 256);
+c.putImageData(test,0,0)
+throw Error("Stop! I'd like to see texture 2 :)")
+ */

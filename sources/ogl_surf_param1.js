@@ -58,7 +58,27 @@ function letsgo () {
         renderer.setSize(window.innerWidth, window.innerHeight);
         camera.perspective({aspect: gl.canvas.width / gl.canvas.height});
     }
-    window.addEventListener('resize', resize, false);
+    //window.addEventListener('resize', resize, false);
+
+    /**
+     * function debounce to avoid calling too many times our canvas resizing
+     * (the resize event can be called hundreds of times as we move the window with the mouse)
+     * @param func
+     * @returns {function(...[*]=)}
+     */
+    const debounce = (func) => {
+        let timer;
+        return (event) => {
+            if (timer) { clearTimeout(timer) }
+            timer = setTimeout(func, 100, event)
+        }
+    };
+
+    window.addEventListener('resize', debounce(() => {
+        console.log("resize canvas");
+        resize();
+    }), false);
+
     resize();
 
     let scene = new Transform();

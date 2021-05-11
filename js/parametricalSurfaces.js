@@ -24,17 +24,12 @@ var parametricalSurfaces = (function () {
 
     const {
         cos, sin, PI, tan, tanh, cosh, sinh, sqrt, pow, abs,
-        sign, max, floor, log, exp, asin, acos
+        sign, floor, log, exp
     } = Math;
 
     const TAU = PI * 2;
     const TWO_TAU = TAU * 2;
     const HALF_PI = PI / 2;
-
-    const DEG_TO_RAD = PI / 180;
-
-    const degToRad = angle => angle * DEG_TO_RAD;
-    const radToDeg = angle => angle * ( 180 / PI );
 
     const cos2 = (x) => pow(cos(x), 2);
 

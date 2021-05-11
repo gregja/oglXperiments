@@ -9,19 +9,12 @@
  *    https://petercollingridge.appspot.com/3D-tutorial/rotating-objects
  */
 
-var shapeCalabiYau = (function (mathjs) {
+var shapeCalabiYau = (function (math) {
     "use strict";
 
     const {
         cos, sin, PI
     } = Math;
-
-    const TAU = PI * 2;
-    const DEG_TO_RAD = PI / 180;
-    const RAD_TO_DEG = 180 / PI;
-
-    const degToRad = angle => angle * DEG_TO_RAD;
-    const radToDeg = angle => angle * RAD_TO_DEG;
 
     var obj3d = {};
 
@@ -121,7 +114,7 @@ var shapeCalabiYau = (function (mathjs) {
                 });
             });
         })
-    };
+    }
 
     /**
      *
