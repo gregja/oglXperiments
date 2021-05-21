@@ -105,6 +105,14 @@ export const textures = [
     '7=texture07.png',
     '8=texture08.png',
     '9=texture09.png',
+    '10=texture10.png',
+    '11=texture11.png',
+    '12=texture12.png',
+    '13=texture13.png',
+    '14=texture14.png',
+    '15=texture15.png',
+    '16=texture16.png',
+    '17=bia-andrade-PO8Woh4YBD8-unsplash.jpg'
 ];
 
 export const textures_extended = [
@@ -118,6 +126,14 @@ export const textures_extended = [
     '7=texture07.png',
     '8=texture08.png',
     '9=texture09.png',
+    '10=texture10.png',
+    '11=texture11.png',
+    '12=texture12.png',
+    '13=texture13.png',
+    '14=texture14.png',
+    '15=texture15.png',
+    '16=texture16.png',
+    '17=bia-andrade-PO8Woh4YBD8-unsplash.jpg',
     'gradTexture()'
 ];
 

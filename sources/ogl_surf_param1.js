@@ -67,7 +67,8 @@ function letsgo () {
     function loadTexture(param) {
         if (extract_code(param) != 0) {
             texture = new Texture(gl);
-            if (param.substr(-4) != '.png') {
+            let suffix = param.substr(-4).toLowerCase();
+            if (suffix != '.png' && suffix != '.jpg') {
                 // TODO : experimental gradiant texture (extend the choice and improve ergonomy)
                 texture.image = gradTexture([[0.75, 0.6, 0.4, 0.25], textures_predefined.palette01.colors]); // eval('param');
             } else {
