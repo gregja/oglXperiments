@@ -58,27 +58,7 @@ function letsgo () {
         renderer.setSize(window.innerWidth, window.innerHeight);
         camera.perspective({aspect: gl.canvas.width / gl.canvas.height});
     }
-    //window.addEventListener('resize', resize, false);
-
-    /**
-     * function debounce to avoid calling too many times our canvas resizing
-     * (the resize event can be called hundreds of times as we move the window with the mouse)
-     * @param func
-     * @returns {function(...[*]=)}
-     */
-    const debounce = (func) => {
-        let timer;
-        return (event) => {
-            if (timer) { clearTimeout(timer) }
-            timer = setTimeout(func, 100, event)
-        }
-    };
-
-    window.addEventListener('resize', debounce(() => {
-        console.log("resize canvas");
-        resize();
-    }), false);
-
+    window.addEventListener('resize', resize, false);
     resize();
 
     let scene = new Transform();
@@ -241,21 +221,21 @@ function letsgo () {
             shapeGenerator(obj, shape3d);
         });
 
-        let gui_spinning = gui.add(obj, 'isSpinning').listen();
-        gui_spinning.onChange(function(value){
+        let guiSpinning = gui.add(obj, 'isSpinning').listen();
+        guiSpinning.onChange(function(value){
             obj.isSpinning = Boolean(value);
         });
 
-        let gui_backgcol = gui.addColor(obj, 'backgroundColor').listen();
-        gui_backgcol.onChange(function(value){
+        let guiBackgcol = gui.addColor(obj, 'backgroundColor').listen();
+        guiBackgcol.onChange(function(value){
             obj.backgroundColor = value.map(val => Math.floor(val)/255);
             gl.clearColor(...settings.backgroundColor);
             gl.clear(gl.COLOR_BUFFER_BIT);
         });
     }
 
-        addGui(settings);
-        requestAnimationFrame(update);
+    addGui(settings);
+    requestAnimationFrame(update);
 }
 
 document.addEventListener("DOMContentLoaded", function (event) {
